@@ -1,0 +1,4 @@
+FROM c:\c\l\c.o+ytab.o+main.o+tvlex.o+execute.o+tab.o+pass2.o+prprog.o
++rules1.o+rules2.o+mathfunc.o+tables.o+perm.o+midi.o+midirule.o+atari.o
+LIB c:\c\l\lcg.lib+c:\c\l\lcm8.lib+c:\c\l\lc.lib+c:\c\l\sflib.lib
+TO tv.prg
