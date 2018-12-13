@@ -26,7 +26,7 @@ UOBJS=	unix.o
 OOBJS=	IpEndpointName.o OscOutboundPacketStream.o \
 	p_NetworkingUtils.o p_UdpSocket.o do_send.o
 
-all:	tv TAGS
+all:	tv TAGS encode decode
 
 tv:	makefile $(OBJS) $(UOBJS) $(MOBJS) $(OOBJS)
 	$(CC) $(OBJS) $(UOBJS)  $(MOBJS)  $(OOBJS) $(LIBS) -o tv

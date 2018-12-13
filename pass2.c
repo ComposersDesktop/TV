@@ -44,9 +44,9 @@ int
 checkident(Expr *e, Proc *proc, Program *prog)
 {
 	int i = 0;
-        Param *pl;
-        Local *ll;
-        Global **gl;
+	Param *pl;
+	Local *ll;
+	Global **gl;
 
 	for(pl = proc->plist; pl != 0; pl = pl->next)
 		if(pl->sym == e->sym)
@@ -121,7 +121,7 @@ checkexpr(Expr *e, Proc *proc, Program *prog)
 			return checkexpr(e->left, proc, prog);
 		case 2:
 			if(e->mfunc->fptab &&
-                           e->left->op != TIDENT && e->left->op != SIDENT) {
+			   e->left->op != TIDENT && e->left->op != SIDENT) {
 				fprintf(stderr, "TV: first parameter of %s must be table\n",
 							e->mfunc->picture);
 				return 1;
@@ -134,14 +134,14 @@ checkexpr(Expr *e, Proc *proc, Program *prog)
 		break;
 
 	case '[':
-             {
-               int err = 0;
+	     {
+	       int err = 0;
 		checkident(e->left, proc, prog);
 		for(el = e->el; el != 0; el = el->next)
 			err += checkexpr(el->e, proc, prog);
-                return err;
-             }
-             //break;
+		return err;
+	     }
+	     //break;
 
 	case PLUSPLUS:
 	case PLUSPLUS+POST:
@@ -162,11 +162,11 @@ checkexpr(Expr *e, Proc *proc, Program *prog)
 		return checkrule(e->rule, proc, prog);
 
 	case STRING:
-          return 0; //checkstring(e->string, proc, prog);
+		return 0; //checkstring(e->string, proc, prog);
 
-        case '~':
-	  return 0; //checkstring(e->string, proc, prog);
-          
+	case '~':
+		return 0; //checkstring(e->string, proc, prog);
+
 	default:
 		fprintf(stderr, "checkoper - operation %d not defined yet\n", e->op);
 		return 1;
@@ -211,9 +211,9 @@ checkcall(Statement *s, Proc *proc, Program *prog)
 	int errs = 0;
 	int arity  = 0;		/* arity of the call */
 	int cnt;
-        Exprlist *el;
+	Exprlist *el;
 	Proc *cproc;
-        Param *param;
+	Param *param;
 
 	/* find number of parameters */
 	for(el = s->el; el != 0; el = el->next)
@@ -273,17 +273,17 @@ checkstat(Statement *s, Proc *proc, Program *prog)
 			errs += checkstat(s->body2, proc, prog);
 			break;
 
-                case SWITCH:
-                  {
-                        Cases *t = (Cases*)s->body1;
-                        errs += checkexpr(s->cond, proc, prog);
-                        while (t) {
-                          errs += checkstat(t->body, proc, prog);
-                          t = t->next;
-                        }
+		case SWITCH:
+		  {
+			Cases *t = (Cases*)s->body1;
+			errs += checkexpr(s->cond, proc, prog);
+			while (t) {
+			  errs += checkstat(t->body, proc, prog);
+			  t = t->next;
+			}
 			errs += checkstat(s->body2, proc, prog);
 			break;
-                  }
+		  }
 
 		case WHILE:
 			errs += checkexpr(s->cond, proc, prog);
@@ -331,54 +331,54 @@ checkstat(Statement *s, Proc *proc, Program *prog)
 
 		case FILLTABLE:
 		case FILLTABLEA:
-                case FILLTABLES:
-                  if((s->cond->op != TIDENT) && (s->cond->op != SIDENT)) {
+		case FILLTABLES:
+		  if((s->cond->op != TIDENT) && (s->cond->op != SIDENT)) {
 				fprintf(stderr,					"TV: filltable must be given a table\n");
 				errs++;
 			} else {
 				checkident(s->cond, proc, prog);
 				if(s->el != 0)
 					errs += checkexpr(s->el->e, proc, prog);
-                                if (s->string != NULL && s->string->op == '[')
-                                  errs += checkstring(s->string, proc, prog);
+				if (s->string != NULL && s->string->op == '[')
+				  errs += checkstring(s->string, proc, prog);
 			}
 			break;
 
-                case SEND:
-                  errs += checkexpr(s->cond, proc, prog);
-                  errs += checkparam(s->el, proc, prog);
-                  if (s->string != NULL)
-                    errs += checkstring(s->string, proc, prog);
-                  {
-                    SEXP *path = (struct sexpr*)s->body1;
-                    if (s->body1 != NULL)
-                      errs += checkstring(path, proc, prog);
-                  }
-                  break;
+		case SEND:
+			errs += checkexpr(s->cond, proc, prog);
+			errs += checkparam(s->el, proc, prog);
+			if (s->string != NULL)
+				errs += checkstring(s->string, proc, prog);
+			{
+				SEXP *path = (struct sexpr*)s->body1;
+				if (s->body1 != NULL)
+					errs += checkstring(path, proc, prog);
+			}
+			break;
 
 		case STORSTR:
 		case STOREFILE:
-                case OPSYSCALL:
-                  	if (s->string != NULL)
-                          errs += checkstring(s->string, proc, prog);
+		case OPSYSCALL:
+			if (s->string != NULL)
+			  errs += checkstring(s->string, proc, prog);
 			break;
 
 		case CLS:
 		case END:
-                case DECDIG:
+		case DECDIG:
 			break;
 
-                case '~':
-                  //printf("Found string assignment\n");
-                  {
-                    SEXP* ss = (SEXP*)s->el;
-                    //printf("**ss=%p\n", ss);
-                    if (s->string != NULL)
-                      errs += checkstring(s->string, proc, prog);
-                    if (ss == NULL || ss->op != '[') errs++;
-                    errs += checkexpr(ss->el->e, proc, prog);
-                  }
-                  break;
+		case '~':
+			//printf("Found string assignment\n");
+			{
+				SEXP* ss = (SEXP*)s->el;
+				//printf("**ss=%p\n", ss);
+				if (s->string != NULL)
+					errs += checkstring(s->string, proc, prog);
+				if (ss == NULL || ss->op != '[') errs++;
+				errs += checkexpr(ss->el->e, proc, prog);
+			}
+			break;
 
 		default:
 			fprintf(stderr, "pass2 - operation %d not defined yet\n", s->code);
@@ -438,7 +438,7 @@ pass2(Program *prog)
 	int i, space;
 	Proc *procs;
 	Table *tab;
-        Global **gl;
+	Global **gl;
 
 	/* create global variables for each table */
 	for(tab = prog->tables; tab != 0; tab = tab->next) {
