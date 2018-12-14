@@ -79,10 +79,10 @@ y.tab.h:	tv.y
 	yacc -d -t tv.y
 
 encode:	tvencode.c
-	cc -o encode tvencode.c
+	cc -g -W -o encode tvencode.c
 
 decode: tvdecode.c
-	cc -o decode tvdecode.c
+	cc -g -W -o decode tvdecode.c
 
 makefile:	Makefile
 	$(CC) -M $(SRCS) $(MSRCS) $(USRCS) > deps

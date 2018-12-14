@@ -26,7 +26,7 @@ static int charp = 8;
 
 static void decode(int32_t* v)
 {
-    uit32_t n=32, sum, y=v[0], z=v[1],
+    uint32_t n=32, sum, y=v[0], z=v[1],
 	     delta=0x9e3779b9 ;
     sum = delta<<5 ;
     /* start cycle */
