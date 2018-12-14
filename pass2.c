@@ -134,14 +134,14 @@ checkexpr(Expr *e, Proc *proc, Program *prog)
 		break;
 
 	case '[':
-	     {
-	       int err = 0;
-		checkident(e->left, proc, prog);
-		for(el = e->el; el != 0; el = el->next)
-			err += checkexpr(el->e, proc, prog);
-		return err;
-	     }
-	     //break;
+		{
+			int err = 0;
+			checkident(e->left, proc, prog);
+			for(el = e->el; el != 0; el = el->next)
+				err += checkexpr(el->e, proc, prog);
+			return err;
+		}
+		//break;
 
 	case PLUSPLUS:
 	case PLUSPLUS+POST:
@@ -233,7 +233,7 @@ checkcall(Statement *s, Proc *proc, Program *prog)
 	if(arity != cproc->arity) {
 		fprintf(stderr, "TV: procedure %s calls %s with %d parameters (should be %d)\n",
 					proc->name->picture, s->label->picture, arity, cproc->arity);
-		errs++;
+		errs = 1;
 	}
 
 	/* check actual parameters */
@@ -332,8 +332,9 @@ checkstat(Statement *s, Proc *proc, Program *prog)
 		case FILLTABLE:
 		case FILLTABLEA:
 		case FILLTABLES:
-		  if((s->cond->op != TIDENT) && (s->cond->op != SIDENT)) {
-				fprintf(stderr,					"TV: filltable must be given a table\n");
+			if((s->cond->op != TIDENT) && (s->cond->op != SIDENT)) {
+				fprintf(stderr,
+					"TV: filltable must be given a table\n");
 				errs++;
 			} else {
 				checkident(s->cond, proc, prog);
@@ -381,7 +382,8 @@ checkstat(Statement *s, Proc *proc, Program *prog)
 			break;
 
 		default:
-			fprintf(stderr, "pass2 - operation %d not defined yet\n", s->code);
+			fprintf(stderr,
+				"pass2 - operation %d not defined yet\n", s->code);
 			exit(1);
 		}
 	}
@@ -420,7 +422,8 @@ checkproc(Proc *proc, Program *prog)
 			}
 			break;
 		default:
-			fprintf(stderr, "TV: internal: illegal case in checkproc\n");
+			fprintf(stderr,
+				"TV: internal: illegal case in checkproc\n");
 			exit(1);
 		}
 
@@ -445,7 +448,7 @@ pass2(Program *prog)
 		for(gl = &prog->globals; *gl != 0; gl = &(*gl)->next) {
 			if((*gl)->name == tab->name) {
 				fprintf(stderr, "TV: table %s defined more than once\n",
-							tab->name->picture);
+					tab->name->picture);
 				errs++;
 			}
 		}

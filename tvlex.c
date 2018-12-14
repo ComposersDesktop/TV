@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <math.h>
 #include <string.h>
@@ -17,21 +18,21 @@
 #define k3 (0x78e800d5)
 
 static union {
-      char c[8];
-      long v[2];
+      char    c[8];
+      int32_t v[2];
 } data;
 
 static int charp = 8;
 
-static void decode(long* v)
+static void decode(int32_t* v)
 {
-    unsigned long n=32, sum, y=v[0], z=v[1],
-             delta=0x9e3779b9 ;
+    uit32_t n=32, sum, y=v[0], z=v[1],
+	     delta=0x9e3779b9 ;
     sum = delta<<5 ;
     /* start cycle */
     while (n-->0) {
-      z   -= (y<<4)+k2 ^ y+sum ^ (y>>5)+k3 ;
-      y   -= (z<<4)+k0 ^ z+sum ^ (z>>5)+k1 ;
+      z	  -= ((y<<4)+k2) ^ (y+sum) ^ ((y>>5)+k3) ;
+      y	  -= ((z<<4)+k0) ^ (z+sum) ^ ((z>>5)+k1) ;
       sum -= delta ;
     }
     /* end cycle */
@@ -64,10 +65,10 @@ static void tv_fgets(char *b, int len, FILES *infile)
     if (infile->encrypt) {
       int n;
       for (n=0; n<len-1;n++) {
-        int c = enc_getc(infile->fd);
-        if (c==EOF) break;
-        b[n] = c;
-        if (c=='\n') { n++; break;}
+	int c = enc_getc(infile->fd);
+	if (c==EOF) break;
+	b[n] = c;
+	if (c=='\n') { n++; break;}
       }
       b[n] = '\0';
     }
@@ -291,13 +292,13 @@ again:
 	case '<':
 		if((ch = tv_getc(infiles)) == '=')
 			return LESS_EQ;
-                if (ch == '<') return BEGCAT;
+		if (ch == '<') return BEGCAT;
 		tv_ungetc(ch, infiles);
 		return '<';
 	case '>':
 		if((ch = tv_getc(infiles)) == '=')
 			return GTHAN_EQ;
-                if (ch == '>') return ENDCAT;
+		if (ch == '>') return ENDCAT;
 		tv_ungetc(ch, infiles);
 		return '>';
 	case '&':
@@ -332,68 +333,68 @@ again:
 		break;
 	case EOF:
 		{
-                  FILES *x = infiles->next;
-                  if (x == NULL) return EOF;
+		  FILES *x = infiles->next;
+		  if (x == NULL) return EOF;
 /* Closing included file */
-                  fclose(infiles->fd);
-                  free(infiles->name);
-                  free(infiles);
-                  infiles = x;
-                  if (x->encrypt) {
-                    data.v[0] = x->data[0];
-                    data.v[1] = x->data[1];
-                    charp = x->charp;
-                  }
-                  linenum = x->linenum;
-                  goto again;
-                }
-        case '#':
+		  fclose(infiles->fd);
+		  free(infiles->name);
+		  free(infiles);
+		  infiles = x;
+		  if (x->encrypt) {
+		    data.v[0] = x->data[0];
+		    data.v[1] = x->data[1];
+		    charp = x->charp;
+		  }
+		  linenum = x->linenum;
+		  goto again;
+		}
+	case '#':
 		{
-                  char name[1024];
-                  FILES *x;
-                  tv_fgets(name,1024,infiles);
-                  if (strncmp(name, "include ", 8)==0) {
-                    char *p = name+8;
-                    while (*p==' ') p++;
-                    if (*p=='"') p++;
-                    else {
-                      printf("Syntax error in #include\n");
-                      goto again;
-                    }
-                    p = strtok(p, "\"\n");
-                    x = (FILES*)malloc(sizeof(FILES));
-                    infiles->linenum = linenum;
-                    x->next = infiles;
-                    if ((x->fd = fopen(p, "r"))==NULL) {
-                      printf("Failed to include file %s\n", p);
-                      free(x);
-                      goto again;
-                    }
-                    {           /* Is this an encrypted file?? */
-                      int ch = getc(x->fd);
-                      x->encrypt = (ch=='\0');
-                      if (!x->encrypt) ungetc(ch, x->fd);
-                      else {
-                        fclose(x->fd);
-                        x->fd = fopen(p, "rb");
-                        getc(x->fd);
-                      }
-/*                    fprintf(stderr, "Enc (%s) = %d\n", p, infiles->encrypt); */
-                    }
-                    x->name = (char*)malloc(strlen(p)+1);
-                    strcpy(x->name, p); /* Safe by construction */
-                    if (infiles->encrypt) {
-                      infiles->charp = charp;
-                      infiles->data[0] = data.v[0];
-                      infiles->data[1] = data.v[1];
-                    }
-                    linenum = 1;
-                    infiles = x;
-                    goto again;
-                  }
-                  printf("Failed to include file\n");
-                  goto again;
-                }
+			char name[1024];
+			FILES *x;
+			tv_fgets(name,1024,infiles);
+			if (strncmp(name, "include ", 8)==0) {
+				char *p = name+8;
+				while (*p==' ') p++;
+				if (*p=='"') p++;
+				else {
+					printf("Syntax error in #include\n");
+					goto again;
+				}
+				p = strtok(p, "\"\n");
+				x = (FILES*)malloc(sizeof(FILES));
+				infiles->linenum = linenum;
+				x->next = infiles;
+				if ((x->fd = fopen(p, "r"))==NULL) {
+					printf("Failed to include file %s\n", p);
+					free(x);
+					goto again;
+				}
+				{	    /* Is this an encrypted file?? */
+					int ch = getc(x->fd);
+					x->encrypt = (ch=='\0');
+					if (!x->encrypt) ungetc(ch, x->fd);
+					else {
+						fclose(x->fd);
+						x->fd = fopen(p, "rb");
+						getc(x->fd);
+					}
+/*		      fprintf(stderr, "Enc (%s) = %d\n", p, infiles->encrypt); */
+				}
+				x->name = (char*)malloc(strlen(p)+1);
+				strcpy(x->name, p); /* Safe by construction */
+				if (infiles->encrypt) {
+					infiles->charp = charp;
+					infiles->data[0] = data.v[0];
+					infiles->data[1] = data.v[1];
+				}
+				linenum = 1;
+				infiles = x;
+				goto again;
+			}
+			printf("Failed to include file\n");
+			goto again;
+		}
 	}
 	if(isdigit(ch)) {
 		getnumber(infiles, ch);
@@ -403,8 +404,8 @@ again:
 	if(isalpha(ch) || ch == '_' || ch == '\'') {
 		*cp++ = ch;
 		while(isalpha(ch = tv_getc(infiles)) ||
-                      isdigit(ch) || ch == '_') {
-			if(cp - buf >= MAXSYM) {
+		      isdigit(ch) || ch == '_') {
+		  if(cp - buf >= MAXSYM) {
 				yyerror("badly formed symbol");
 				exit(1);
 			}
@@ -415,9 +416,9 @@ again:
 		yylval.symbol = lookup(buf);
 		if(yylval.symbol->keywcode != 0) {
 			if(yylval.symbol->keywcode == BREAK
-			 ||yylval.symbol->keywcode == CONTINUE
-			 ||yylval.symbol->keywcode == RETURN
-			 ||yylval.symbol->keywcode == LOOP)
+			   ||yylval.symbol->keywcode == CONTINUE
+			   ||yylval.symbol->keywcode == RETURN
+			   ||yylval.symbol->keywcode == LOOP)
 				showcr = 1;
 			return yylval.symbol->keywcode;
 		}
@@ -431,8 +432,8 @@ again:
 			return MFUNC;
 		}
 		showcr = 1;
-		return istablesym(yylval.symbol) ? TIDENT : 
-                  isstablesym(yylval.symbol) ? SIDENT : IDENT;
+		return istablesym(yylval.symbol) ? TIDENT :
+			isstablesym(yylval.symbol) ? SIDENT : IDENT;
 	}
 	sprintf(buf, "Syntax error - got char '%c' - ignored", ch);
 	yyerror(buf);

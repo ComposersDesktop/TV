@@ -1,20 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
-/* long key[4] = {0x7bea0297, 0xef4d3625, 0xaed5a0ea, 0x78e800d5}; */
+#include <stdint.h>
+/* int32_t key[4] = {0x7bea0297, 0xef4d3625, 0xaed5a0ea, 0x78e800d5}; */
 #define k0 (0x7bea0297)
 #define k1 (0xef4d3625)
 #define k2 (0xaed5a0ea)
 #define k3 (0x78e800d5)
 
-void decode(long* v)
+void decode(int32_t* v)
 {
-    unsigned long n=32, sum, y=v[0], z=v[1],
+    uint32_t n=32, sum, y=v[0], z=v[1],
              delta=0x9e3779b9 ;
     sum=delta<<5 ;
     /* start cycle */
     while (n-->0) {
-      z-= (y<<4)+k2 ^ y+sum ^ (y>>5)+k3 ;
-      y-= (z<<4)+k0 ^ z+sum ^ (z>>5)+k1 ;
+      z-= ((y<<4)+k2) ^ (y+sum) ^ ((y>>5)+k3) ;
+      y-= ((z<<4)+k0) ^ (z+sum) ^ ((z>>5)+k1) ;
       sum-=delta ;
     }
     /* end cycle */
@@ -26,8 +27,8 @@ int main(int argc, char **argv)
     FILE *inf, *outf;
     int n;
     union {
-      char c[8];
-      long v[2];
+      char    c[8];
+      int32_t v[2];
     } data;
     int finished = 0;
 

@@ -41,12 +41,12 @@ e_add_dec(Statement *s, Cell *locals, void **dp)
 	value = eval(inputs->e, locals);
 
 	if(comp1 != comp2) {
-	    LGVAR(output, locals)->u.d =
+		LGVAR(output, locals)->u.d =
 		comp1 < comp2 ? out+value : out-value;
-	    return 1;
+		return 1;
 	}
 	else {
-	    return 0;
+		return 0;
 	}
 }
 
@@ -126,8 +126,8 @@ e_copy(Statement *s, Cell *locals, void **dp)
 	val = eval(src, locals);
 
 	for(; dests != 0; dests = dests->next) {
-	    if(dests->e->op == '[')
-	       *dereftab(LGVAR(dests->e,locals)->u.table, dests->e->el, locals)
+		if(dests->e->op == '[')
+			*dereftab(LGVAR(dests->e,locals)->u.table, dests->e->el, locals)
 			= val;
 		else {
 			Cell *cell = LGVAR(dests->e, locals);
@@ -180,16 +180,16 @@ e_lim(Statement *s, Cell *locals, void **dp)
 	}
 
 	for(outputs = s->el; outputs != 0; outputs = outputs->next) {
-	    if(LGVAR(outputs->e,locals)->lock)
-		return -1; /* output cell locked */
-	    if(eval(outputs->e, locals) < low) {
-		LGVAR(outputs->e, locals)->u.d = low;
-		return 1; /* limiting has been done */
-	    }
-	    if(eval(outputs->e, locals) > high) {
-		LGVAR(outputs->e, locals)->u.d = high;
-		return 1; /* limiting has been done */
-	    }
+		if(LGVAR(outputs->e,locals)->lock)
+			return -1; /* output cell locked */
+		if(eval(outputs->e, locals) < low) {
+			LGVAR(outputs->e, locals)->u.d = low;
+			return 1; /* limiting has been done */
+		}
+		if(eval(outputs->e, locals) > high) {
+			LGVAR(outputs->e, locals)->u.d = high;
+			return 1; /* limiting has been done */
+		}
 	}
 
 	return 0; /* nothing has been done */
@@ -256,60 +256,60 @@ e_linexplog(Statement *s, Cell *locals, void **dp)
 	struct linexplogdata *ld = *(struct linexplogdata **)dp;
 
 	if(strcmp(s->rule->picture, "lin") == 0)
-	    mode = 0;				/* 'lin' */
+		mode = 0;				/* 'lin' */
 	else if(strcmp(s->rule->picture, "exp") == 0)
-	    mode = 1;				/* 'exp' */
+		mode = 1;				/* 'exp' */
 	else
-	    mode = 2;				/* 'log' */
+		mode = 2;				/* 'log' */
 	ld->num_inputs = numparam(s->elr);
 	if(ld->target_reached) {
-	    ld->starttime = timevalue;
-	    dur = eval(inputs->e, locals);
-	    inputs = inputs->next;
-	    if(ld->first) {
-		if(inputs != 0)
-		    ld->direction = (int)eval(inputs->e, locals);
-		ld->first = 0;
-	    }
-	    ld->targettime = timevalue + (unsigned long)(dur * TICKSPERSEC);
-	    ld->dur = (unsigned long)(dur * TICKSPERSEC);		/* Dur as long */
-	    ld->target_reached = FALSE;
+		ld->starttime = timevalue;
+		dur = eval(inputs->e, locals);
+		inputs = inputs->next;
+		if(ld->first) {
+			if(inputs != 0)
+				ld->direction = (int)eval(inputs->e, locals);
+			ld->first = 0;
+		}
+		ld->targettime = timevalue + (unsigned long)(dur * TICKSPERSEC);
+		ld->dur = (unsigned long)(dur * TICKSPERSEC);		/* Dur as long */
+		ld->target_reached = FALSE;
 	}
 
 	if(ld->num_inputs == 4) {
-	    inputs = s->elr->next;
-	    inputs = inputs->next;
-	    scale1 = eval(inputs->e, locals);
-	    inputs = inputs->next;
-	    scale2 = eval(inputs->e, locals);
-	    if(scale2 < scale1) {
-		diff = scale2;
-		scale2 = scale1;
-		scale1 = diff;
-	    }
-	    diff = scale2 - scale1;
+		inputs = s->elr->next;
+		inputs = inputs->next;
+		scale1 = eval(inputs->e, locals);
+		inputs = inputs->next;
+		scale2 = eval(inputs->e, locals);
+		if(scale2 < scale1) {
+			diff = scale2;
+			scale2 = scale1;
+			scale1 = diff;
+		}
+		diff = scale2 - scale1;
 	}
 	else {
-	    scale1 = 0.0;
-	    diff = 1.0;
+		scale1 = 0.0;
+		diff = 1.0;
 	}
 	if(ld->direction)
-	    comp = (1.0 - (double)(timevalue - ld->starttime) / ld->dur);
+		comp = (1.0 - (double)(timevalue - ld->starttime) / ld->dur);
 	else
-	    comp = (double)(timevalue - ld->starttime) / ld->dur;
+		comp = (double)(timevalue - ld->starttime) / ld->dur;
 
 	if(mode == 1)
-	    comp = (-log10(1.0 - comp)/2);
+		comp = (-log10(1.0 - comp)/2);
 	if(mode == 2)
-	    comp = 1.0 - (-log10(comp)/2);
+		comp = 1.0 - (-log10(comp)/2);
 	comp = (comp > 1.0 ? 1.0 : comp);
 	comp = (comp < 0.0 ? 0.0 : comp);
 
 	LGVAR(out, locals)->u.d = comp * diff + scale1;
 
 	if(timevalue >= ld->targettime) {
-	    ld->direction = !ld->direction;
-	    ld->target_reached = TRUE; /* ready for next segment */
+		ld->direction = !ld->direction;
+		ld->target_reached = TRUE; /* ready for next segment */
 	}
 	return (ld->target_reached);
 }
@@ -462,12 +462,12 @@ int checkstring(SEXP* ss, Proc *proc, Program *prog)
 		return checkparam(ss->el, proc, prog);
 	if (ss && ss->op == BEGCAT) {
 		int errs = 0;
-		while (ss = ss->next) {
+		while ((ss = ss->next)) {
 			errs+=checkstring(ss, proc, prog);
 		}
 		return errs;
 	}
-	if (ss && ss->op == INT2STRING || ss && ss->op == NUM2STRING)
+	if (ss && (ss->op == INT2STRING || ss->op == NUM2STRING))
 		return checkexpr(ss->el->e, proc, prog);
 	return 0;		/* raw string constant */
 }
@@ -513,7 +513,7 @@ int e_messageq(Statement *s, Cell *locals, void **dp)
 {
 	char *ss = sexp(s->elr->e->string,locals);
 	putc('"',stdout);
-	(void)fputs(s->elr->e->sym->picture, stdout);
+	(void)fputs(ss, stdout);
 	putc('"',stdout);
 	return 1;
 }
@@ -556,10 +556,10 @@ int
 c_mouse(Statement *s, Proc *proc, Program *prog)
 {
 	if(numparam(s->elr) != 4) {
-	    if(numparam(s->elr)) {
-		rule_err(proc, "mouse", "has incorrect number of inputs");
-		return 1;
-	    }
+		if(numparam(s->elr)) {
+			rule_err(proc, "mouse", "has incorrect number of inputs");
+			return 1;
+		}
 	}
 
 	return checkparam(s->el, proc, prog) + checkparam(s->elr, proc, prog);
@@ -587,16 +587,16 @@ e_mouse(Statement *s, Cell *locals, void **dp)
 	y = eval(outputs->e, locals);
 
 	if(numparam(inputs) == 4) {
-	    scale1 = eval(inputs->e, locals); inputs = inputs->next;
-	    scale2 = eval(inputs->e, locals); inputs = inputs->next;
-	    scale3 = eval(inputs->e, locals); inputs = inputs->next;
-	    scale4 = eval(inputs->e, locals);
+		scale1 = eval(inputs->e, locals); inputs = inputs->next;
+		scale2 = eval(inputs->e, locals); inputs = inputs->next;
+		scale3 = eval(inputs->e, locals); inputs = inputs->next;
+		scale4 = eval(inputs->e, locals);
 	}
 	else {
-	    scale1 = 0.0;
-	    scale2 = 1.0;
-	    scale3 = 0.0;
-	    scale4 = 1.0;
+		scale1 = 0.0;
+		scale2 = 1.0;
+		scale3 = 0.0;
+		scale4 = 1.0;
 	}
 	xdiff = fabs(scale2 - scale1);
 	ydiff = fabs(scale4 - scale3);
@@ -636,51 +636,51 @@ e_mult(Statement *s, Cell *locals, void **dp)
 	int	all_locked = TRUE, freevar = 0;
 
 	for(inputs = s->elr; inputs != 0; inputs = inputs->next) {
-	    if(check_lock(inputs->e, locals) == FALSE) {
-		all_locked = FALSE;
-		break;
-	    }
+		if(check_lock(inputs->e, locals) == FALSE) {
+			all_locked = FALSE;
+			break;
+		}
 	}
 
 	if(all_locked) {
-	    for(inputs = s->elr; inputs != 0; inputs = inputs->next)
-		multval *= eval(inputs->e, locals);
-	    if(eval(s->el->e, locals) == multval)
-		return TRUE;
-	    else
-		return FALSE;
+		for(inputs = s->elr; inputs != 0; inputs = inputs->next)
+			multval *= eval(inputs->e, locals);
+		if(eval(s->el->e, locals) == multval)
+			return TRUE;
+		else
+			return FALSE;
 	}
 
 	if(check_lock(output, locals)) {
-	    target_left = eval(output, locals);
-	    for(inputs = s->elr; inputs != 0; inputs = inputs->next) {
-		val = eval(inputs->e, locals);
-		if(val == 0.0)
-		    LGVAR(inputs->e, locals)->u.d = 1.0;
-		else
-		    multval *= val;
-		if(!check_lock(inputs->e, locals)) {
-		    freevar++;
+		target_left = eval(output, locals);
+		for(inputs = s->elr; inputs != 0; inputs = inputs->next) {
+			val = eval(inputs->e, locals);
+			if(val == 0.0)
+				LGVAR(inputs->e, locals)->u.d = 1.0;
+			else
+				multval *= val;
+			if(!check_lock(inputs->e, locals)) {
+				freevar++;
+			}
 		}
-	    }
-	    mult_adjust = pow(target_left/multval, 1.0/(double)freevar);
+		mult_adjust = pow(target_left/multval, 1.0/(double)freevar);
 
-	    for(inputs = s->elr; inputs != 0; inputs = inputs->next) {
-		if(!check_lock(inputs->e, locals))
-		    LGVAR(inputs->e, locals)->u.d *= mult_adjust;
-	    }
-	    return TRUE;
+		for(inputs = s->elr; inputs != 0; inputs = inputs->next) {
+			if(!check_lock(inputs->e, locals))
+				LGVAR(inputs->e, locals)->u.d *= mult_adjust;
+		}
+		return TRUE;
 	}
 	else {
-	    for(inputs = s->elr; inputs != 0; inputs = inputs->next) {
-		val = eval(inputs->e, locals);
-		if(val != 0.0)
-		    multval *= val;
-	    }
-	    if(multval == 1.0)
-		multval = 0.0;
-	    LGVAR(output, locals)->u.d = multval;
-	    return TRUE;
+		for(inputs = s->elr; inputs != 0; inputs = inputs->next) {
+			val = eval(inputs->e, locals);
+			if(val != 0.0)
+				multval *= val;
+		}
+		if(multval == 1.0)
+			multval = 0.0;
+		LGVAR(output, locals)->u.d = multval;
+		return TRUE;
 	}
 	return FALSE;
 }
