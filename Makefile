@@ -1,5 +1,5 @@
 #	Makefile for TABULA VIGILANS
-CFLAGS = -g
+CFLAGS = -g -Wall
 CXXFLAGS = -g -DOSC_HOST_LITTLE_ENDIAN=1 -I OSC
 LIBDIR = 
 LIBS = -lportmidi -lporttime -lasound -lm -lstdc++
@@ -78,8 +78,8 @@ y.tab.c:	tv.y
 y.tab.h:	tv.y
 	yacc -d -t tv.y
 
-encode:	tvencoder.c
-	cc -o encode tvencoder.c
+encode:	tvencode.c
+	cc -o encode tvencode.c
 
 decode: tvdecode.c
 	cc -o decode tvdecode.c

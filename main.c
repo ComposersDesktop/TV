@@ -67,7 +67,8 @@ main(int argc, char *argv[])
 	{
 		for(i=0; argv[i] != 0; i++) {
 			if(strncmp(argv[i], "form.", 5) == 0) {
-				strcpy(formfile, argv[i]);
+                        	 strncpy(formfile, argv[i], 20);
+                          	formfile[19]='\0';
 				printf("\nForm file is: %s\n", formfile);
 			}
 		}

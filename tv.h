@@ -248,8 +248,8 @@ extern int dump_globals;
 #ifdef _WIN32
 double
 drand48(void);
-void list_mididevs(void);
 #endif
+void list_mididevs(void);
 
 extern int yyparse();
 extern void yyerror(char *str);

@@ -982,10 +982,10 @@ mkrule(Rule *rule, Exprlist *e1, Exprlist *e2)
 	if(rule->right_arity >= 0 && e2l != rule->right_arity) {
 	    if(rule->right_arity == 0)
 		fprintf(stderr, "TV: rule '%s' should have no input parameters\n",
-					rule->picture, rule->right_arity);
+					rule->picture);
 	    else if(rule->right_arity == 1)
 		fprintf(stderr, "TV: rule '%s' should have one input parameter\n",
-					rule->picture, rule->right_arity);
+					rule->picture);
 	    else
 		fprintf(stderr, "TV: rule '%s' requires %d input parameters\n",
 					rule->picture, rule->right_arity);

@@ -598,12 +598,12 @@ exec(Statement *pc, Cell *params)
                     s->next = sfile; sfile = s;
                      if (pc->cond == NULL) {
                       s->storefile = malloc(strlen(ss)+1);
-                      strcpy(s->storefile, ss);
+                      strcpy(s->storefile, ss); /* Safe by construction */
                     }
                     else {      /* STOREFILEA */
                       char *a = mf_args(eval(pc->cond, params));
                       s->storefile = malloc(strlen(a)+1);
-                      strcpy(s->storefile, a);
+                      strcpy(s->storefile, a); /* Safe by construction */
                     }
                     s->store_buf = (char *)calloc(sizeof(char), 2048);
                     if((s->storefd = open(s->storefile,
@@ -883,8 +883,6 @@ void
 filltables(TableS *tab, char *s, Exprlist *el, Cell *params)
 {
 	FILE	*fp;
-	double	temp;
-	char    tempstr[161];
 	char	str[MAXSTRING];
 	int	i, j, offset = 0, size;
         int     defer = (tab->tabdim.sizes[0]<0); /* Deferred? */

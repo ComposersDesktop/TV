@@ -105,7 +105,7 @@ lookup(char *str)
 		yyerror("Can't get memory for symbol picture");
 		exit(1);
 	}
-	strcpy(sp->picture, str);
+	strcpy(sp->picture, str); /* Safe by construction */
 	sp->keywcode = 0;
 	return sp;
 }
@@ -141,7 +141,7 @@ getstring(FILES *infile)
 		case '"':
 			*bp = '\0';
 			yylval.string = emalloc(strlen(buf)+1);
-			strcpy(yylval.string, buf);
+			strcpy(yylval.string, buf); /* Safe by construction */
 			return STRING;
 		case '\n':
 			fprintf(stderr, "TV: string constant contains newline on line %d\n",
@@ -381,7 +381,7 @@ again:
 /*                    fprintf(stderr, "Enc (%s) = %d\n", p, infiles->encrypt); */
                     }
                     x->name = (char*)malloc(strlen(p)+1);
-                    strcpy(x->name, p);
+                    strcpy(x->name, p); /* Safe by construction */
                     if (infiles->encrypt) {
                       infiles->charp = charp;
                       infiles->data[0] = data.v[0];
