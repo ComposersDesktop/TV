@@ -365,6 +365,7 @@ checkstat(Statement *s, Proc *proc, Program *prog)
 			break;
 
 		case CLS:
+		case SHOWARGS:
 		case END:
 		case DECDIG:
 			break;

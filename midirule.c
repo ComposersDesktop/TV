@@ -31,11 +31,11 @@ taborval(Expr *e, int idx_in, Cell *locals)
 		if(tab == 0) {
 		    fprintf(stderr, 
 			"Tabula Vigilans: MIDIRule table does not exist!\n");
-		    tidy_up(0);
+		    tidy_up(7);
 		}
 		if(tab->tabdim.dimensions != 1) {
 		    fprintf(stderr, "tv: MIDIRule table must have one dimension\n");
-		    tidy_up(0);
+		    tidy_up(7);
 		}
 		idx_in %= tab->tabdim.sizes[0];
 		if(idx_in < 0)
@@ -50,7 +50,7 @@ taborval(Expr *e, int idx_in, Cell *locals)
 	if(tab == 0) {
 	    fprintf(stderr,
 		"Tabula Vigilans: MIDIRule table does not exist!\n");
-	    tidy_up(0);
+	    tidy_up(7);
 	}
 	data = tab->mem;
 	idxs = e->el;
@@ -58,7 +58,7 @@ taborval(Expr *e, int idx_in, Cell *locals)
 	    if(idxs == 0) {
 		fprintf(stderr,
 		    "Tabula Vigilans: MIDIRule table: not enough indexes\n");
-		tidy_up(0);
+		tidy_up(7);
 	    }
 	    didx = eval(idxs->e, locals);
 
@@ -78,7 +78,7 @@ taborval(Expr *e, int idx_in, Cell *locals)
 	}
 	if(idxs != 0) {
 	    fprintf(stderr, "Tabula Vigilans: too many indexes on table\n");
-	    tidy_up(0);
+	    tidy_up(7);
 	}
 	
 	data -= idx;

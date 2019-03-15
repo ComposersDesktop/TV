@@ -79,6 +79,21 @@ e_anylocked(Statement *s, Cell *locals, void **dp)
 }
 
 int
+c_close_storefiles(Statement *s, Proc *proc, Program *prog)
+{
+    return 0;
+}
+
+int
+e_close_storefiles(Statement *s, Cell *locals, void **dp)
+{
+    extern void close_storefiles();
+    close_storefiles();
+	return 1;
+}
+
+
+int
 c_copy(Statement *s, Proc *proc, Program *prog)
 {
 	Exprlist *el;

@@ -13,24 +13,14 @@
 
 typedef unsigned long TICK;
 
-#ifdef ATARI
-	#define _TT	1		/* If compiling for TT */
-	#define TICKSPERSEC	(200)
-#else
-# ifdef _WIN32
+#ifdef _WIN32
 	#define TICKSPERSEC	(1000)	//PC
 # else
 	#define TICKSPERSEC	(1)
 #endif
-#endif
 
-#ifdef _TT				/* TT Medium Resolution */
-	#define	SCREENWIDTH	639
-	#define	SCREENHEIGHT	479
-#else
-	#define	SCREENWIDTH	639	/* ST High Resolution */
-	#define	SCREENHEIGHT	399
-#endif
+#define	SCREENWIDTH	639	/* ST High Resolution */
+#define	SCREENHEIGHT	399
 
 extern	short	mouse_x, mouse_y;
 extern	Sfile   *sfile;         /* Storage file descriptors */
@@ -57,6 +47,7 @@ RULEDECL(add_dec);
 RULEDECL(alllocked);
 RULEDECL(anylocked);
 RULEDECL(compare);	t_ruleinit i_compare;
+RULEDECL(close_storefiles);
 RULEDECL(control_out);
 RULEDECL(copy);
 RULEDECL(copy_table);

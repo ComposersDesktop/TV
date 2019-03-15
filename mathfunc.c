@@ -45,7 +45,7 @@ mf_dimensions(Table *tab)
 {
 	if(tab == 0) {
 		fprintf(stderr, "TV: attempt made to find number of dimensions of null table variable\n");
-		tidy_up(0);
+		tidy_up(7);
 	}
 	return (double)tab->tabdim.dimensions;
 }
@@ -59,13 +59,13 @@ mf_dimsize(Table *tab, double fdim)
 	if(tab == 0) {
 		fprintf(stderr,
 	"TV: attempt made to find dimension-size of null table variable\n");
-		tidy_up(0);
+		tidy_up(7);
 	}
 	if(dim < 0 || dim >= tab->tabdim.dimensions) {
 		sprintf(str,
 			"TV: table does not have dimension %d\n", dim+1);
 		fprintf(stderr, str);
-		tidy_up(0);
+		tidy_up(7);
 	}
 	return (double)tab->tabdim.sizes[dim];
 }

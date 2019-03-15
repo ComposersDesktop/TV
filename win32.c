@@ -18,6 +18,7 @@
 static void CALLBACK MidiProc(HMIDIIN Hin,UINT msg,DWORD inst,DWORD param1,DWORD param2);
 static void clrscreen( HANDLE hConsole );
 
+extern int midiin_used;
 
 struct midi_in_data {
 		int quality;
@@ -33,7 +34,7 @@ struct midi_in_data {
 //dreaded globals...
 int finish;
 short  mouse_button, mouse_x, mouse_y;
-short  ConWidth,ConHeight;
+short  ConWidth = 0,ConHeight = 0;
 
 static UINT MidiOutID = 0;
 static UINT MidInID = 0;
@@ -251,12 +252,11 @@ void
 perf_time(int report) /* stores time of performance */
 {
 	double secs;
-	unsigned long mins =0L, hours = 0L, days = 0L;
+	unsigned long mins = 0L, hours = 0L, days = 0L;
 
 	register unsigned long timevalue = current_time();
     static int    first = TRUE;
 	static unsigned long	start_systime;
-
 
 	if(first) {
 	    start_systime = timevalue;
@@ -340,7 +340,7 @@ void list_mididevs(void)
 	else {
 		UINT thisdev;
 		MIDIINCAPS incaps;
-		printf("\nfound %d MIDI IN devices:",devs);
+		printf("\nFound %d MIDI IN devices:",devs);
 		for(thisdev=0; thisdev < devs;thisdev++){
 			if(midiInGetDevCaps(thisdev,&incaps,sizeof(MIDIINCAPS)) == MMSYSERR_NOERROR)
 				printf("\n  %d:   %s",thisdev+1,incaps.szPname);
@@ -351,12 +351,12 @@ void list_mididevs(void)
 	}
 	devs = midiOutGetNumDevs();
 	if(devs==0){
-		fprintf(stderr,"\nNo MIDI output devices found");
+		fprintf(stderr,"\nNo MIDI input devices found");
 	}
 	else {
 		UINT thisdev;
 		MIDIOUTCAPS outcaps;
-		printf("\nfound %d MIDI OUT devices:",devs);
+		printf("\nFound %d MIDI OUT devices:",devs);
 		for(thisdev=0; thisdev < devs;thisdev++){
 			if(midiOutGetDevCaps(thisdev,&outcaps,sizeof(MIDIOUTCAPS)) == MMSYSERR_NOERROR)
 				printf("\n  %d:   %s",thisdev+1,outcaps.szPname);
@@ -393,9 +393,9 @@ inits(int dev_midiin,int dev_midiout)
 	dev = midiInGetNumDevs();
 	if(dev==0){
 		fprintf(stderr,"\nNo MIDI IN device found");
-	}
-	else{
-		MidiIndev = (UINT) dev_midiin;		//RWD.11.98
+	} else {
+        MidiIndev = /*(UINT) 0;*/     dev_midiin;		//RWD.11.98
+		//fprintf(stderr, "\nMIDIin device %d", MidiIndev);
 		if(
 		   (midiInGetDevCaps(MidiIndev,&incaps,sizeof(MIDIINCAPS))== MMSYSERR_NOERROR)
 		   &&										
@@ -404,9 +404,10 @@ inits(int dev_midiin,int dev_midiout)
 		   (midiInStart(InHandle)== MMSYSERR_NOERROR)
 			) {
 				printf("\nUsing %s for MIDI input",incaps.szPname);					
-		}
-		else{
-		 	   fprintf(stderr,"\nWARNING: error initializing  MIDI input");
+		} else if (midiin_used) {
+			fprintf(stderr,"\n   Note - This script uses MIDIIN, yet no device has been defined!");
+			fprintf(stderr,"\n   try 'tv -M <RETURN>'\n");
+            exit(1);
 		}
 	}
 

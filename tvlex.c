@@ -4,9 +4,7 @@
 #include <ctype.h>
 #include <math.h>
 #include <string.h>
-#ifndef	LATTICE
 #include <malloc.h>
-#endif
 #include "tv.h"
 #include "xtab.h"
 #define MAXSYM (100)
@@ -117,6 +115,7 @@ initsymtab(void)
 	struct keytab *key = keytab;
 	Symbol *sym;
 	while(key->picture != 0) {
+//        fprintf(stderr, "KEY->PICTURE is %s\n", key->picture);
 		sym = lookup(key->picture);
 		sym->keywcode = key->code;
 		sym->rule = key->rule;

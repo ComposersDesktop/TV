@@ -109,6 +109,8 @@
         <SEQ TYPE="OPERATOR">)</SEQ>
         <SEQ TYPE="OPERATOR">}</SEQ>
         <SEQ TYPE="OPERATOR">{</SEQ>
+        <SEQ TYPE="OPERATOR">&lt;&lt;</SEQ>
+        <SEQ TYPE="OPERATOR">&gr;&gt;</SEQ>
         <SEQ TYPE="OPERATOR">;</SEQ>
 
     </RULES>
@@ -130,8 +132,10 @@
           <KEYWORD1>fill_table</KEYWORD1>
           <KEYWORD1>for</KEYWORD1>
           <KEYWORD1>if</KEYWORD1>
+          <KEYWORD1>int2string</KEYWORD1>
           <KEYWORD1>local</KEYWORD1>
           <KEYWORD1>loop</KEYWORD1>
+          <KEYWORD1>num2string</KEYWORD1>
           <KEYWORD1>return</KEYWORD1>
           <KEYWORD1>oscsend</KEYWORD1>
           <KEYWORD1>storefile</KEYWORD1>

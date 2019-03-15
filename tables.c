@@ -78,11 +78,11 @@ e_compare(Statement *s, Cell *locals, void **dp)
 
 	if((A == 0) || (B == 0)) {
 	    fprintf(stderr, "TV: rule 'compare': non-existent input table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	if(C == 0) {
 	    fprintf(stderr, "TV: rule 'compare': non-existent output table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 
 	A_siz =  A->tabdim.sizes[0];
@@ -161,11 +161,11 @@ e_copy_table(Statement *s, Cell *locals, void **dp)
 
 	if(table1 == 0) {
 	    fprintf(stderr, "TV: rule 'copy_table': non-existent output table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	if(table2 == 0) {
 	    fprintf(stderr, "TV: rule 'copy_table': non-existent input table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 
 	table1_size	=  table1->tabdim.sizes[0];
@@ -226,11 +226,11 @@ e_embed(Statement *s, Cell *locals, void **dp)
 
 	if((A == 0) || (B == 0)) {
 	    fprintf(stderr, "TV: rule 'embed': non-existent input table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	if(C == 0) {
 	    fprintf(stderr, "TV: rule 'embed': non-existent output table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	C_siz =  C->tabdim.sizes[0];
 	A_siz =  A->tabdim.sizes[0];
@@ -297,11 +297,11 @@ e_fold(Statement *s, Cell *locals, void **dp)
 
 	if((A == 0) || (B == 0)) {
 	    fprintf(stderr, "TV: rule 'fold': non-existent input table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	if(C == 0) {
 	    fprintf(stderr, "TV: rule 'fold': non-existent output table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	C_siz =  C->tabdim.sizes[0];
 	A_siz =  A->tabdim.sizes[0];
@@ -364,11 +364,11 @@ e_generate(Statement *s, Cell *locals, void **dp)
 
 	if(A == 0) {
 	    fprintf(stderr, "TV: rule 'generate': non-existent input table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	if(B == 0) {
 	    fprintf(stderr, "TV: rule 'generate': non-existent output table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 
 	A_siz =  A->tabdim.sizes[0];
@@ -467,11 +467,11 @@ e_interp_table(Statement *s, Cell *locals, void **dp)
 
 	if((A == 0) || (B == 0)) {
 	    fprintf(stderr, "TV: rule 'interp_table': non-existent input table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	if(C == 0) {
 	    fprintf(stderr, "TV: rule 'interp_table': non-existent output table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 
 	C_siz = C->tabdim.sizes[0];
@@ -542,11 +542,11 @@ e_mult_table(Statement *s, Cell *locals, void **dp)
 
 	if(output_table == 0) {
 	    fprintf(stderr, "TV: rule 'mult_table': non-existent output table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	if((table1 == 0) || (table2 == 0)) {
 	    fprintf(stderr, "TV: rule 'mult_table': non-existent input table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 
 	output_size	=  output_table->tabdim.sizes[0];
@@ -622,11 +622,11 @@ e_offset_table(Statement *s, Cell *locals, void **dp)
 
 	if(output_table == 0) {
 	    fprintf(stderr, "TV: rule 'offset_table': non-existent output table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	if(input_table == 0) {
 	    fprintf(stderr, "TV: rule 'offset_table': non-existent input table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	
 
@@ -683,7 +683,7 @@ e_shift(Statement *s, Cell *locals, void **dp)
 
 	if(A == 0) {
 	    fprintf(stderr, "TV: rule 'shift': non-existent input table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	A_siz =  A->tabdim.sizes[0];
 
@@ -747,7 +747,7 @@ e_sort(Statement *s, Cell *locals, void **dp)
 	input_table  = LGVAR(inputs->e, locals)->u.table;
 	if(input_table == 0) {
 	    fprintf(stderr, "TV: rule 'sort': input table does not exist!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	inputs = inputs->next;
 	if(inputs)
@@ -814,11 +814,11 @@ e_scale_table(Statement *s, Cell *locals, void **dp)
 
 	if(output_table == 0) {
 	    fprintf(stderr, "TV: rule 'scale_table': non-existent output table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	if(input_table == 0) {
 	    fprintf(stderr, "TV: rule 'scale_table': non-existent input table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	output_size	=  output_table->tabdim.sizes[0];
 	input_size	=   input_table->tabdim.sizes[0];
@@ -886,11 +886,11 @@ e_subst(Statement *s, Cell *locals, void **dp)
 
 	if((A == 0) || (B == 0)) {
 	    fprintf(stderr, "TV: rule 'subst': non-existent input table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	if(C == 0) {
 	    fprintf(stderr, "TV: rule 'subst': non-existent output table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 
 	fac = fabs(eval(inputs->e, locals));
@@ -948,11 +948,11 @@ e_sum_table(Statement *s, Cell *locals, void **dp)
 
 	if(output_table == 0) {
 	    fprintf(stderr, "TV: rule 'sum_table': non-existent output table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	if((table1 == 0) || (table2 == 0)) {
 	    fprintf(stderr, "TV: rule 'ssum_table': non-existent input table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	output_size	=  output_table->tabdim.sizes[0];
 	table1_size	=  table1->tabdim.sizes[0];
@@ -1039,14 +1039,14 @@ e_xadr(Statement *s, Cell *locals, void **dp)
 		fprintf(stderr, "TV: rule 'xad': non-existent input table!");
 	    else
 		fprintf(stderr, "TV: rule 'xar': non-existent input table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	if(B == 0) {
 	    if(strcmp(s->rule->picture, "xad") == 0)
 		fprintf(stderr, "TV: rule 'xad': non-existent output table!");
 	    else
 		fprintf(stderr, "TV: rule 'xar': non-existent output table!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 
 	A_siz =  A->tabdim.sizes[0];

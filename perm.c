@@ -131,12 +131,12 @@ e_perm(Statement *s, Cell *locals, void **dp)
 	A = LGVAR(inputs->e,  locals)->u.table;
 	if(A == 0) {
 	    fprintf(stderr, "TV: rule 'perm': non-existent input table!");
-	    tidy_up(0);
+	    tidy_up(7);
 	}
 	A_siz =  A->tabdim.sizes[0];
 	if(A_siz > MAXSZ) {
 	    fprintf(stderr, "TV: rule 'perm': maximum size of tables for permutations is 50!");
-	    tidy_up(0);
+	    tidy_up(7);
 	}
 	factsize = fact((short)A_siz);
 

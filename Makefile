@@ -12,7 +12,6 @@ SRCS1=	y.tab.c main.c tvlex.c execute.c tab.c pass2.c prprog.c
 SRCS2=	rules1.c rules2.c mathfunc.c tables.c perm.c
 SRCS=	$(SRCS1) $(SRCS2)
 MSRCS=	midi.c midirule.c
-ASRCS=	atari.c
 USRCS=	unix.c
 OSRCS=	OSC/IpEndpointName.cpp OSC/OscOutboundPacketStream.cpp \
 	OSC/p_NetworkingUtils.cpp OSC/p_UdpSocket.cpp OSC/do_send.cpp
@@ -21,7 +20,6 @@ OBJS1=	y.tab.o main.o tvlex.o execute.o tab.o pass2.o prprog.o
 OBJS2=	rules1.o rules2.o mathfunc.o tables.o perm.o
 OBJS=	$(OBJS1) $(OBJS2)
 MOBJS=	midi.o midirule.o
-AOBJS=	atari.o
 UOBJS=	unix.o
 OOBJS=	IpEndpointName.o OscOutboundPacketStream.o \
 	p_NetworkingUtils.o p_UdpSocket.o do_send.o
@@ -52,19 +50,18 @@ do_send.o:	makefile OSC/do_send.cpp
 #.cpp.o:	makefile
 #	$(CXX) -c $(CXXFLAGS) $*.cpp
 
-TAGS:	$(SRCS) $(HDR) $(MSRCS) $(ASRCS) $(USRCS) $(OSRCS)
-	etags $(SRCS) $(HDR) $(ASRCS) $(USRCS) $(OSRCS)
+TAGS:	$(SRCS) $(HDR) $(MSRCS) $(USRCS) $(OSRCS)
+	etags $(SRCS) $(HDR) $(USRCS) $(OSRCS)
 
 #
 #targets
 #
 
 TV.zip:	Makefile $(SRCS) $(HDR) $(MSRCS) $(ASRCS) $(USRCS) $(OSRCS)
-	zip TV.zip atari.c mac.c main.c Makefile Makefile.osx mathfunc.c \
-	midi.c midi.h midirule.c pass2.c perm.c prprog.c rules1.c rules2.c \
-	rules.h tab.c tables.c tvdecode.c tvencode.c tv.h tvlex.c tv.lnk \
-	tv.mac tvnf.lnk tv.y unix.c win32.c xtab.h y.tab.c y.tab.h \
-	$(OSRCS)
+	zip TV.zip mac.c main.c Makefile Makefile.osx mathfunc.c midi.c \
+        midi.h midirule.c pass2.c perm.c prprog.c rules1.c rules2.c \
+	rules.h tab.c tables.c tvdecode.c tvencode.c tv.h tvlex.c tv.y \
+        unix.c win32.c xtab.h y.tab.c y.tab.h $(OSRCS) tv-mode.el tv.vim tv.xml
 #
 #dependencies
 #

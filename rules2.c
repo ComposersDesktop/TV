@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <io.h>
 #include <sys\stat.h>
+#include <process.h>
 #endif
 #include "tv.h"
 #include "rules.h"
@@ -278,7 +279,7 @@ e_store(Statement *s, Cell *locals, void **dp)
       }
       if (f==NULL) {
         fprintf(stderr, "Storefile not allocated for storstr");
-        tidy_up(0);
+        tidy_up(5);
       }
     }
 
@@ -331,7 +332,7 @@ e_store(Statement *s, Cell *locals, void **dp)
         }
         if (f==NULL) {
           fprintf(stderr, "Storefile not allocated for storstr");
-          tidy_up(0);
+          tidy_up(5);
         }
 	for(el = s->elr->next; el != 0; el = el->next) {
 	    sprintf(temp, "%.*lf", decdig, (eval(el->e, locals)));
@@ -347,7 +348,7 @@ e_store(Statement *s, Cell *locals, void **dp)
 	if(check != 1024)
 	{
 	    fprintf(stderr, "\nSTORE: Storefile write failure!");
-	    tidy_up(0);
+	    tidy_up(5);
 	}
 	memcpy(f->store_buf, f->store_buf + 1024, 1024);
     }

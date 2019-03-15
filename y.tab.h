@@ -95,8 +95,8 @@ extern int yydebug;
     FILLTABLEA = 305,
     ARGS = 306,
     OPSYSCALL = 307,
-    OPSYSCALLS = 308,
-    GETARGSTR = 309,
+    GETARGSTR = 308,
+    SHOWARGS = 309,
     FILLTABLES = 310,
     FILLTABLESA = 311,
     BEGCAT = 312,
@@ -156,8 +156,8 @@ extern int yydebug;
 #define FILLTABLEA 305
 #define ARGS 306
 #define OPSYSCALL 307
-#define OPSYSCALLS 308
-#define GETARGSTR 309
+#define GETARGSTR 308
+#define SHOWARGS 309
 #define FILLTABLES 310
 #define FILLTABLESA 311
 #define BEGCAT 312
@@ -170,7 +170,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 34 "tv.y" /* yacc.c:1909  */
+#line 28 "tv.y" /* yacc.c:1909  */
 
 	double number;
 	struct symbol *symbol;
@@ -185,10 +185,10 @@ union YYSTYPE
 	struct mfunc *mfunc;
 	struct table *tables;
 	struct tabdim tabdim;
-        struct cases *caseind;
-  	char *string;
+	struct cases *caseind;
+	char *string;
 	int code;
-        struct sexpr *sexpr;
+	struct sexpr *sexpr;
 
 #line 194 "y.tab.h" /* yacc.c:1909  */
 };

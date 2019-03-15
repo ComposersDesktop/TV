@@ -4,6 +4,7 @@
 #include <fcntl.h>
 
 #define MAXSTRING 161
+#define MAXTABNAMES 10
 #define	TRUE	1
 #define FALSE	0
 
@@ -11,6 +12,7 @@ int	yylex(void);
 void	gem_init(void);
 void	inits(int dev_midiin,int dev_midiout);
 void	perf_time(int);		/* stores time of performance */
+void    close_storefiles(void);
 void	tidy_up(int);
 void	mach_cleanup(void);	/* machine-dependent cleanup */
 
@@ -142,11 +144,7 @@ struct mfunc {
 	char *picture;
 	int arity;
 	int fptab;
-#ifdef LATTICE
-	double (*exec)();
-#else
 	double (*exec)(/*...*/);
-#endif
 };
 
 typedef struct rule {
@@ -188,7 +186,7 @@ typedef struct FILES {
   FILE*	fd;
   char  *name;
   int   linenum;
-  int   encrypt;                /* Is this file encryped */
+  int   encrypt;                /* Is this file encrypted */
   int   charp;                  /* Save current position on switch */
   long  data[2];
   struct FILES *next;

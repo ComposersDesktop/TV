@@ -12,13 +12,7 @@ extern int yydebug;
 
 #include <stdlib.h>
 #include <stdio.h>
-#ifdef LATTICE
-#include <osbind.h>
-#include <gemlib.h>
-#endif
-#ifndef	LATTICE
 #include <malloc.h>
-#endif
 #include <memory.h>
 #include "tv.h"
 
@@ -45,10 +39,10 @@ extern Program *prog;
 	struct mfunc *mfunc;
 	struct table *tables;
 	struct tabdim tabdim;
-        struct cases *caseind;
-  	char *string;
+	struct cases *caseind;
+	char *string;
 	int code;
-        struct sexpr *sexpr;
+	struct sexpr *sexpr;
 }
 
 %start program
@@ -68,16 +62,16 @@ extern Program *prog;
 %token	<rule>		RULE
 %token	<mfunc>		MFUNC
 %token	<string>	STRING
-%token  <sexp>		STRINGEXP
+%token	<sexp>		STRINGEXP
 
 %token	CR
 %token	IF ELSE END CLS CALL WHILE FOR LOCAL
 %token	RETURN LOOP BREAK CONTINUE
 %token	FILLTABLE STOREFILE STORSTR SEND DECDIG
 %token	IMODO IMODC TRY SWITCH CASE DEFAULT
-%token  FILLTABLEA ARGS OPSYSCALL OPSYSCALLS GETARGSTR 
-%token  FILLTABLES FILLTABLESA
-%token  BEGCAT ENDCAT INT2STRING NUM2STRING
+%token	FILLTABLEA ARGS OPSYSCALL GETARGSTR SHOWARGS
+%token	FILLTABLES FILLTABLESA
+%token	BEGCAT ENDCAT INT2STRING NUM2STRING
 
 %type <prog>	program
 %type <proc>	procs proc
@@ -85,7 +79,7 @@ extern Program *prog;
 %type <el>	opt_rexpr_list rexpr_list index_list index
 %type <stat>	lines statement assignment filltable_stmt
 %type <expr>	expression rexpression
-%type <sexpr>   stringexp stringlist
+%type <sexpr>	stringexp stringlist
 %type <symbol>	opt_label opt_ident
 %type <tables>	inits init
 %type <tabdim>	tabdim dimension
@@ -131,7 +125,7 @@ init:
 	}
 |	TABLE SIDENT tabdim CR
 	{
-                $$ = ALLOC(Table);
+		$$ = ALLOC(Table);
 		$$->name = $2;
 		$$->tabdim = $3;
 		$$->mem = 0;
@@ -142,7 +136,7 @@ init:
 tabdim:
 	tabdim dimension
 	{
-            if ($1.dimensions!=0xffffffff) {
+	    if ($1.dimensions!=0xffffffff) {
 		int *new = emalloc(($1.dimensions+1)*sizeof(int));
 
 		memcpy(new, $1.sizes, $1.dimensions*sizeof(int));
@@ -151,13 +145,13 @@ tabdim:
 		free($2.sizes);
 		$$.dimensions = $1.dimensions + 1;
 		$$.sizes = new;
-            }
-            else {              /* Deferred allocation */
-              free($1.sizes);
-              free($2.sizes);
-              $$.dimensions = $1.dimensions + 1;
-              $$.sizes = NULL;
-            }
+	    }
+	    else {		/* Deferred allocation */
+	      free($1.sizes);
+	      free($2.sizes);
+	      $$.dimensions = $1.dimensions + 1;
+	      $$.sizes = NULL;
+	    }
 	}
 |	dimension
 ;
@@ -206,7 +200,7 @@ proc:
 		$$->next = NULL;
 		{
 			int i = 0;
-                        Param *pl = $3;
+			Param *pl = $3;
 			Local *ll = $7;
 			while(pl != 0) {
 				pl = pl->next;
@@ -319,23 +313,23 @@ statement:
 		$$ = mkrule($2, $1, el);
 	}
 /* |	opt_rexpr_list RULE ARGS '(' expression ')' ',' rexpr_list CR */
-/* 	{ */
-/* 		Exprlist *el = ALLOC(Exprlist); */
-/* 		el->e = ALLOC(Expr); */
-/* 		el->e->op = STRING; */
-/* 		el->e->sym = lookup($5); */
-/* 		el->next = $8; */
-/* 		$$ = mkrule($2, $1, el); */
-/* 	} */
+/*	{ */
+/*		Exprlist *el = ALLOC(Exprlist); */
+/*		el->e = ALLOC(Expr); */
+/*		el->e->op = STRING; */
+/*		el->e->sym = lookup($5); */
+/*		el->next = $8; */
+/*		$$ = mkrule($2, $1, el); */
+/*	} */
 /* |	opt_rexpr_list RULE ARGS '(' expression ')' */
-/* 	{ */
-/* 		Exprlist *el = ALLOC(Exprlist); */
-/* 		el->e = ALLOC(Expr); */
-/* 		el->e->op = STRING; */
-/* 		el->e->sym = lookup($5); */
-/* 		el->next = NULL; */
-/* 		$$ = mkrule($2, $1, el); */
-/* 	} */
+/*	{ */
+/*		Exprlist *el = ALLOC(Exprlist); */
+/*		el->e = ALLOC(Expr); */
+/*		el->e->op = STRING; */
+/*		el->e->sym = lookup($5); */
+/*		el->next = NULL; */
+/*		$$ = mkrule($2, $1, el); */
+/*	} */
 |	opt_rexpr_list RULE opt_rexpr_list CR
 	{
 		$$ = mkrule($2, $1, $3);
@@ -392,89 +386,97 @@ statement:
 	{
 		$$ = mkstat(STOREFILE);
 		$$->string = $3;
-                $$->ruledataoffset = (int)($2+0.5);
+		$$->ruledataoffset = (int)($2+0.5);
 	}
 |	STOREFILE NUMBER ARGS '(' expression ')' CR
 	{
 		$$ = mkstat(STOREFILE);
 		$$->cond = $5;
-                $$->ruledataoffset = (int)($2+0.5);
+		$$->ruledataoffset = (int)($2+0.5);
 	}
 |	STOREFILE stringexp opt_cr
 	{
 		$$ = mkstat(STOREFILE);
 		$$->string = $2;
-                $$->ruledataoffset = 0;
+		$$->ruledataoffset = 0;
 	}
 |	STOREFILE ARGS '(' expression ')' CR
 	{
 		$$ = mkstat(STOREFILE);
 		$$->cond = $4;
-                $$->ruledataoffset = 0;
+		$$->ruledataoffset = 0;
 	}
 |	STORSTR NUMBER stringexp opt_cr
 	{
 		$$ = mkstat(STORSTR);
 		$$->string = $3;
-                $$->ruledataoffset = (int)($2+0.5);
+		$$->ruledataoffset = (int)($2+0.5);
 	}
 |	STORSTR NUMBER ARGS '(' expression ')' CR
 	{
 		$$ = mkstat(STORSTR);
 		$$->cond = $5;
-                $$->ruledataoffset = (int)($2+0.5);
+		$$->ruledataoffset = (int)($2+0.5);
 	}
 |	STORSTR stringexp opt_cr
 	{
 		$$ = mkstat(STORSTR);
 		$$->string = $2;
-                $$->ruledataoffset = 0;
+		$$->ruledataoffset = 0;
 	}
 |	STORSTR ARGS '(' expression ')' CR
 	{
 		$$ = mkstat(STORSTR);
 		$$->cond = $4;
-                $$->ruledataoffset = 0;
+		$$->ruledataoffset = 0;
 	}
+|   SHOWARGS ARGS '(' expression ')' CR
+	{
+		$$ = mkstat(SHOWARGS);
+		$$->cond = $4;
+		$$->ruledataoffset = 0;
+		$$->next = NULL;
+	}
+
 |	OPSYSCALL stringexp opt_cr
 	{
-                $$ = mkstat(OPSYSCALL);
-                $$->string = $2;
+		$$ = mkstat(OPSYSCALL);
+		$$->string = $2;
 	}
-|       SEND stringexp expression stringexp '(' rexpr_list ')' CR
+|	SEND stringexp expression stringexp '(' rexpr_list ')' CR
 	{
 		$$ = mkstat(SEND);
 		$$->string = $2;
-                $$->cond = $3;
-                $$->body1 = (struct statement*)$4;
+		$$->cond = $3;
+		$$->body1 = (struct statement*)$4;
 		$$->el = $6;
-                $$->ruledataoffset = 0;
+		$$->ruledataoffset = 0;
 	}
-|       DECDIG NUMBER CR
+|	DECDIG NUMBER CR
 	{
-            $$ = mkstat(DECDIG);
-            $$->ruledataoffset = (int)($2+0.5);
-        }
+	    $$ = mkstat(DECDIG);
+	    $$->ruledataoffset = (int)($2+0.5);
+	}
 |	assignment CR
-|       stringexp '=' stringexp opt_cr
+|	stringexp '=' stringexp opt_cr
 	{
-            $$ = mkstat('~');
-            $$->string = $3;
-            $$->el =(struct exprlist*)$1;
-        }
-|       SWITCH expression opt_cr '{' opt_cr cases opt_cr DEFAULT ':' opt_cr '{' lines opt_cr '}' opt_cr '}'
+	    $$ = mkstat('~');
+	    $$->string = $3;
+	    $$->el =(struct exprlist*)$1;
+	}
+|	SWITCH expression opt_cr '{' opt_cr cases opt_cr DEFAULT ':' opt_cr '{' lines opt_cr '}' opt_cr '}'
 	{
-            /* $2 is var; $6 the cases, $12 the default */
-            $$ = mkstat(SWITCH);
-            $$->cond = $2;
-            $$->body1 = (Statement*)$6;
-            $$->body2 = $12;
+	    /* $2 is var; $6 the cases, $12 the default */
+	    $$ = mkstat(SWITCH);
+	    $$->cond = $2;
+	    $$->body1 = (Statement*)$6;
+	    $$->body2 = $12;
 	}
 ;
 
 filltable_stmt:
 	TIDENT FILLTABLE ARGS '(' expression ')' CR
- 	{
+	{
 		$$ = mkstat(FILLTABLEA);
 		$$->cond = mkexpr(TIDENT, 0, 0);
 		$$->cond->sym = $1;
@@ -508,7 +510,7 @@ filltable_stmt:
 		$$->cond->sym = $1;
 		$$->elr = ALLOC(Exprlist);
 		$$->elr->e = $5;
-                $$->elr->next = NULL;
+		$$->elr->next = NULL;
 		$$->el = ALLOC(Exprlist);
 		$$->el->next = NULL;
 		$$->el->e = $8;
@@ -522,7 +524,7 @@ filltable_stmt:
 		$$->el = NULL;
 	}
 |	SIDENT FILLTABLE ARGS '(' expression ')' CR
- 	{
+	{
 		$$ = mkstat(FILLTABLESA);
 		$$->cond = mkexpr(SIDENT, 0, 0);
 		$$->cond->sym = $1;
@@ -548,31 +550,31 @@ filltable_stmt:
 		$$->cond->sym = $1;
 		$$->elr = ALLOC(Exprlist);
 		$$->elr->e = $5;
-                $$->elr->next = NULL;
+		$$->elr->next = NULL;
 		$$->el = ALLOC(Exprlist);
 		$$->el->next = NULL;
 		$$->el->e = $8;
 	}
 ;
 
-cases:    cases caseitem {
+cases:	  cases caseitem {
 		if ($1==NULL) $$ = $2;
-                else {
-                  Cases *s = $1;
-                  while (s->next!=NULL) s = s->next;
-                  s->next = $2; $$ = $1;
-                }
-          }
+		else {
+		  Cases *s = $1;
+		  while (s->next!=NULL) s = s->next;
+		  s->next = $2; $$ = $1;
+		}
+	  }
 |	/* */
 	{ $$ = NULL; };
 
 caseitem:   CASE NUMBER ':' opt_cr '{' lines opt_cr '}' opt_cr 
-        {
-            $$ = mkcases(CASE);
-            $$->val = $2;
-            $$->body = $6;
-            $$->next = NULL;
-        };
+	{
+	    $$ = mkcases(CASE);
+	    $$->val = $2;
+	    $$->body = $6;
+	    $$->next = NULL;
+	};
 
 opt_ident:
 	IDENT
@@ -808,7 +810,7 @@ index:
 	{
 		$$ = ALLOC(Exprlist);
 		$$->e = $2;
-                $$->wrap = 1;
+		$$->wrap = 1;
 		$$->next = NULL;
 	}
 |	IMODO expression IMODC
@@ -826,54 +828,54 @@ opt_cr:
 ;
 
 stringexp:
-        SIDENT index_list
+	SIDENT index_list
 	{
 		 $$ = ALLOC(SEXP);
-                 $$->op = '[';
-                 $$->sym = $1;
-                 $$->el = $2;
-                 $$->string = NULL;
+		 $$->op = '[';
+		 $$->sym = $1;
+		 $$->el = $2;
+		 $$->string = NULL;
 	}
 |	STRING
 	{
-            $$ = ALLOC(SEXP);
-            $$->op = 0;
-            $$->sym = NULL;
-            $$->el = NULL;
-            $$->string = $1;
-        }
+	    $$ = ALLOC(SEXP);
+	    $$->op = 0;
+	    $$->sym = NULL;
+	    $$->el = NULL;
+	    $$->string = $1;
+	}
 |	BEGCAT stringlist ENDCAT
 	{
-            $$ = ALLOC(SEXP);
-            $$->op = BEGCAT;
-            $$->next = $2;
-        }
+	    $$ = ALLOC(SEXP);
+	    $$->op = BEGCAT;
+	    $$->next = $2;
+	}
 |	INT2STRING '(' expression ')'
 	{
-	    	$$ = ALLOC(SEXP);
-            	$$->op = INT2STRING;
-            	$$->el = ALLOC(Exprlist);
+		$$ = ALLOC(SEXP);
+		$$->op = INT2STRING;
+		$$->el = ALLOC(Exprlist);
 		$$->el->e = $3;
 		$$->el->wrap = 0;
 		$$->el->next = 0;
 		$$->next = NULL;
-        }
+	}
 |	NUM2STRING '(' expression ')'
 	{
 	    $$ = ALLOC(SEXP);
-            $$->op = NUM2STRING;
-            	$$->el = ALLOC(Exprlist);
+	    $$->op = NUM2STRING;
+		$$->el = ALLOC(Exprlist);
 		$$->el->e = $3;
 		$$->el->wrap = 0;
 		$$->el->next = 0;
 		$$->next = NULL;
-        }
+	}
 ;
 
 stringlist:
 	stringexp
 	{
-                $$ = $1;
+		$$ = $1;
 		$$->next = NULL;
 	}
 |	stringlist ',' stringexp
