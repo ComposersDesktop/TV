@@ -10,13 +10,13 @@
 #include <memory.h>
 #include "tv.h"
 
-#define	VERSION	"V1.5e: R.O./JPff Nov 2018"
+#define	VERSION	"V1.5f: R.O./JPff Nov 2018"
 	/* NB This version has improvements by John ffitch  -
 	      #include,
 	      ability to declare tables without size, etc...
 		Encryption ability added November 2005.
 		"system" call added Aug 2007
-		"spawn" call - RO added Oct 2007
+		"spawn" call - RO added Oct 2007 but removed by JPff
           1.37  - spawn has malloced input args deprecated
           Dynamic memory allocation for ruleflnm, formfile, and strtbl.
           New rule 'close_storefiles' which can be invoked at any stage in a script.
