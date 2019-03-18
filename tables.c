@@ -122,7 +122,7 @@ e_compare(Statement *s, Cell *locals, void **dp)
 		}
 	    }
 	    if(k != C_siz)
-		printf("\nCOMPARE: Optimum Size of Output Table is %ld\n", k);
+		printf("\nCOMPARE: Optimum Size of Output Table is %d\n", k);
 	    *done = 1;
 	    return 1;
 	}
@@ -134,17 +134,21 @@ c_copy_table(Statement *s, Proc *proc, Program *prog)
 {
 	Exprlist *el;
 
-	if(s->el->e->op != TIDENT) {
+	if(s->el->e->op != TIDENT && s->el->e->op != SIDENT) {
 	    rule_err(proc, "copy_table", "must have a table as output");
 	    return 1;
 	}
 
 	el = s->elr;
-	if(el->e->op != TIDENT) {
+	if(el->e->op != TIDENT && s->el->e->op != SIDENT) {
 	    rule_err(proc, "copy_table", "must have a table as input");
 	    return 1;
 	}
 
+        if (s->el->e->op != el->e->op) {
+          rule_err(proc, "copy_table", "must have both tables thesame type");
+          return 1;
+        }
 	return checkparam(s->el, proc, prog) + checkparam(s->elr, proc, prog);
 }
 
@@ -152,7 +156,7 @@ int
 e_copy_table(Statement *s, Cell *locals, void **dp)
 {
 	int	i, minimum, table1_size, table2_size;
-	struct	table *table1, *table2;
+	Table *table1, *table2;
 	struct	expr *output = s->el->e;
 	struct	expr *input  = s->elr->e;
 
@@ -170,80 +174,95 @@ e_copy_table(Statement *s, Cell *locals, void **dp)
 
 	table1_size	=  table1->tabdim.sizes[0];
 	table2_size	=  table2->tabdim.sizes[0];
-		 /* NB - Using only 1 dimension for now */
+        if (table1_size <0)  {
+          /* deferred */
+          table1->tabdim.sizes[0] = table1_size = table2_size;
+          if (s->el->e->op == TIDENT)
+            table1->mem = malloc(table2_size*sizeof(double));
+          else
+            table1->mem = malloc(table2_size*MAXSTRING);
+        }
+        /* NB - Using only 1 dimension for now */
 
 	minimum = min(table1_size, table2_size);
 
-	for(i = 0; i < minimum; i++)
+	if (s->el->e->op == TIDENT) {
+          for(i = 0; i < minimum; i++)
 	    table1->mem[i] = table2->mem[i];
-
+        }
+        else {
+          TableS* in  = (TableS*)table2;
+          TableS* out = (TableS*)table1;
+          for(i = 0; i < minimum; i++)
+            strcpy(out->mem+MAXSTRING*i, in->mem+MAXSTRING*i);
+        }
 	if(table1_size != table2_size)
-		return 0;
+          return 0;
 	return 1;
 }
 
 int
 c_embed(Statement *s, Proc *proc, Program *prog)
 {
-	Exprlist *el;
+    Exprlist *el;
 
-	if(s->el->e->op != TIDENT) {
-	    rule_err(proc, "embed", "must have a table as output");
-	    return 1;
-	}
+    if(s->el->e->op != TIDENT) {
+      rule_err(proc, "embed", "must have a table as output");
+      return 1;
+    }
 
-	for(el = s->elr; el != 0; el = el->next) {
-	    if(el->e->op != TIDENT) {
-		rule_err(proc, "embed", "must have tables as inputs");
-		return 1;
-	    }
-	}
+    for(el = s->elr; el != 0; el = el->next) {
+      if(el->e->op != TIDENT) {
+        rule_err(proc, "embed", "must have tables as inputs");
+        return 1;
+      }
+    }
 
-	return checkparam(s->el, proc, prog) + checkparam(s->elr, proc, prog);
+    return checkparam(s->el, proc, prog) + checkparam(s->elr, proc, prog);
 }
 
 int
 i_embed(void **dp)
 {
-	*(int *)dp = 0;
-	return 0;
+    *(int *)dp = 0;
+    return 0;
 }
 
 int
 e_embed(Statement *s, Cell *locals, void **dp)
 {
-	/* User prototype: C embed A, B */
-	int	i, j, k, A_siz, B_siz, C_siz;
-	double	mmin = HUGE_VAL;
-	int	*done = (int *)dp;
-	struct	table *A, *B, *C;
-	struct	expr *output = s->el->e;
-	struct	exprlist *inputs  = s->elr;
+    /* User prototype: C embed A, B */
+    int	i, j, k, A_siz, B_siz, C_siz;
+    double	mmin = HUGE_VAL;
+    int	*done = (int *)dp;
+    struct	table *A, *B, *C;
+    struct	expr *output = s->el->e;
+    struct	exprlist *inputs  = s->elr;
 
-	C = LGVAR(output, locals)->u.table;
-	A = LGVAR(inputs->e, locals)->u.table;	inputs = inputs->next;
-	B = LGVAR(inputs->e, locals)->u.table;
+    C = LGVAR(output, locals)->u.table;
+    A = LGVAR(inputs->e, locals)->u.table;	inputs = inputs->next;
+    B = LGVAR(inputs->e, locals)->u.table;
 
-	if((A == 0) || (B == 0)) {
-	    fprintf(stderr, "TV: rule 'embed': non-existent input table!");
-	    tidy_up(5);
-	}
-	if(C == 0) {
-	    fprintf(stderr, "TV: rule 'embed': non-existent output table!");
-	    tidy_up(5);
-	}
-	C_siz =  C->tabdim.sizes[0];
-	A_siz =  A->tabdim.sizes[0];
-	B_siz =  B->tabdim.sizes[0];
+    if((A == 0) || (B == 0)) {
+      fprintf(stderr, "TV: rule 'embed': non-existent input table!");
+      tidy_up(5);
+    }
+    if(C == 0) {
+      fprintf(stderr, "TV: rule 'embed': non-existent output table!");
+      tidy_up(5);
+    }
+    C_siz =  C->tabdim.sizes[0];
+    A_siz =  A->tabdim.sizes[0];
+    B_siz =  B->tabdim.sizes[0];
 
-	if(*done == 0) {	/* Table C embedding to be done */
-	    for(i = 0; i < B_siz; i++) {
-		mmin = (mmin < B->mem[i] ? mmin: B->mem[i]);
-	    }
-	    mmin = -mmin;
+    if(*done == 0) {	/* Table C embedding to be done */
+      for(i = 0; i < B_siz; i++) {
+        mmin = (mmin < B->mem[i] ? mmin: B->mem[i]);
+      }
+      mmin = -mmin;
 
-	    for(i = 0, k = 0; i < A_siz; i++) {
-		if(k >= C_siz) break;
+      for(i = 0, k = 0; i < A_siz; i++) {
+        if(k >= C_siz) break;
 		for(j = 0; j < B_siz; j++) {
 		    C->mem[k++] = A->mem[i] + B->mem[j] + mmin;
 		    if(k >= C_siz) break;
@@ -284,7 +303,7 @@ i_fold(void **dp)
 int
 e_fold(Statement *s, Cell *locals, void **dp)
 {	/* User prototype: C fold A, B */
-	int	i, j, k, A_siz, B_siz, C_siz;
+	int	i, j, k, A_siz, B_siz;
 	double	unit = 0.0;
 	int	*done = (int *)dp;
 	struct	table *A, *B, *C;
@@ -303,7 +322,7 @@ e_fold(Statement *s, Cell *locals, void **dp)
 	    fprintf(stderr, "TV: rule 'fold': non-existent output table!");
 	    tidy_up(5);
 	}
-	C_siz =  C->tabdim.sizes[0];
+	//C_siz =  C->tabdim.sizes[0];
 	A_siz =  A->tabdim.sizes[0];
 	B_siz =  B->tabdim.sizes[0];
 
@@ -412,7 +431,7 @@ e_generate(Statement *s, Cell *locals, void **dp)
 	    }
 	    if(B_siz != i) check = 1;
 	    if(check)
-		printf("\nGENERATE: Optimum size of output table is %ld", k);
+		printf("\nGENERATE: Optimum size of output table is %d", k);
 	    free(temp_table);
 	    free(diff_table);
 	    *done = 1;
