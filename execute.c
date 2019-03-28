@@ -182,8 +182,14 @@ char *sexp(SEXP *ss, Cell *par)
       if (ss->string==NULL) ss->string = (char*)calloc(1, MAXSTRING);
       else *ss->string = '\0';
       while (tt) {
+        int l,t;
 	res = sexp(tt, par);
-	strcat(ss->string, res);
+        l = strlen(res); t = strlen(ss->string);
+        if (l+t>=MAXSTRING-1) {
+          fprintf(stderr, "String too long\n");
+          l = MAXSTRING-t-1; /* truncate long string */
+        }
+        strncat(ss->string, res, l);
 	tt = tt->next;
       }
       return ss->string;
@@ -593,8 +599,9 @@ exec(Statement *pc, Cell *params)
 
 		case STOREFILE:
 		  {
+		    //char *ss = mf_args(eval(pc->cond, params));
+                    char *ss = sexp(pc->string, params);//pc->string->string;
 		    Sfile *s = sfile;
-		    char *ss = sexp(pc->string, params);
 		    while (s) {
 		      /*printf("%p: Compare %d %d\n",
 			     s, s->fnum, pc->ruledataoffset);*/
