@@ -599,8 +599,7 @@ exec(Statement *pc, Cell *params)
 
 		case STOREFILE:
 		  {
-		    //char *ss = mf_args(eval(pc->cond, params));
-                    char *ss = sexp(pc->string, params);//pc->string->string;
+                    char *ss;
 		    Sfile *s = sfile;
 		    while (s) {
 		      /*printf("%p: Compare %d %d\n",
@@ -612,7 +611,8 @@ exec(Statement *pc, Cell *params)
 		    s = (Sfile*)malloc(sizeof(Sfile));
 		    s->next = sfile; sfile = s;
 		     if (pc->cond == NULL) {
-		      s->storefile = malloc(strlen(ss)+1);
+		      ss = sexp(pc->string, params);
+                      s->storefile = malloc(strlen(ss)+1);
 		      strcpy(s->storefile, ss); /* Safe by construction */
 		    }
 		    else {	/* STOREFILEA */

@@ -430,7 +430,7 @@ statement:
 		$$->cond = $4;
 		$$->ruledataoffset = 0;
 	}
-|   SHOWARGS ARGS '(' expression ')' CR
+|	SHOWARGS ARGS '(' expression ')' CR
 	{
 		$$ = mkstat(SHOWARGS);
 		$$->cond = $4;
