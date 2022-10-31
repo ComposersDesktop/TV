@@ -13,9 +13,9 @@
 #include "midi.h"
 #include <portmidi.h>
 #include <porttime.h>
-#ifndef __MACH__
-#include <stropts.h>
-#endif
+/* #ifndef __MACH__ */
+/* #include <stropts.h> */
+/* #endif */
 #include <poll.h>
 
 static int indev = 0;
