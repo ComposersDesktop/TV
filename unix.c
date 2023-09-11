@@ -6,6 +6,7 @@
 #include <math.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 #include <signal.h>
 #include "tv.h"
@@ -13,13 +14,10 @@
 #include "midi.h"
 #include <portmidi.h>
 #include <porttime.h>
-/* #ifndef __MACH__ */
-/* #include <stropts.h> */
-/* #endif */
+#ifndef __MACH__
+#include <stropts.h>
+#endif
 #include <poll.h>
-
-static int indev = 0;
-static int outdev = 0;
 
 TICK
 current_time(void)
@@ -172,7 +170,8 @@ static PmDeviceInfo *portMidi_getDeviceInfo(int dev, int output)
       return NULL;
     return ((PmDeviceInfo*)Pm_GetDeviceInfo((PmDeviceID) i));
 }
-
+/* RWD 09 -23: make text output compatible with win32 version */
+#if 0
 void list_mididevs(void)
 {
     int           i, cnt;
@@ -205,18 +204,55 @@ void list_mididevs(void)
     else
       printf("No available MIDI out devices\n");
 }
+#else
+void list_mididevs(void)
+{
+    int i, cnt;
+    PmDeviceInfo  *info;
+
+    cnt = portMidi_getDeviceCount(0);
+    if(cnt == 0){
+        fprintf(stderr,"No MIDI input devices found\n");
+    }
+    else {
+        printf("\nfound %d MIDI IN devices:\n",cnt);
+      for (i = 0; i < cnt; i++) {
+        info = portMidi_getDeviceInfo(i, 0);
+        if (info->interf != NULL)
+          printf(" %3d: %s (%s)\n", i+1, info->name, info->interf);
+        else
+          printf(" %3d: %s\n", i+1, info->name);
+      }
+    }
+
+    cnt = portMidi_getDeviceCount(1);
+    if(cnt == 0){
+        fprintf(stderr,"No MIDI output devices found\n");
+    }
+    else {
+        printf("found %d MIDI OUT devices:\n",cnt);
+      for (i = 0; i < cnt; i++) {
+        info = portMidi_getDeviceInfo(i, 1);
+        if (info->interf != NULL)
+          printf(" %3d: %s (%s)\n", i+1, info->name, info->interf);
+        else
+          printf(" %3d: %s\n", i+1, info->name);
+      }
+    }
+}
+#endif
 
 void
 inits(int dev_midiin,int dev_midiout)
 {
-    int         cnt_indev,cnt_outdev; /* RWD count ins and outs separately*/
+    int         cntdev;
     srand48(time(0));
 
     finish = 0;
     if(signal(SIGINT, SIG_IGN) != SIG_IGN)
       signal(SIGINT, hdlr);
-    cnt_indev = portMidi_getDeviceCount(0);
-    if (cnt_indev==0) {
+    cntdev = portMidi_getDeviceCount(0);
+    if (cntdev==0) {
       fprintf(stderr,"\nNo MIDI IN device found\n");
     }
     else {
@@ -226,12 +262,10 @@ inits(int dev_midiin,int dev_midiout)
       PortMidiStream *midistream;
       
       /* look up device in list */
-#ifndef __MACH__
-		if (dev_midiin < 0 || dev_midiin >= cnt_indev) {
-        printf("error: device number is out of range\n");
+      if (dev_midiin < 0 || dev_midiin >= cntdev) {
+        printf("error: device number %d is out of range (%d) \n",dev_midiin,cntdev);  //RWD
         exit(1);
       }
-#endif
       info = portMidi_getDeviceInfo(dev_midiin, 0);
       if (info->interf != NULL)
       printf("PortMIDI: selected input device %d: '%s' (%s)\n",
@@ -239,9 +273,6 @@ inits(int dev_midiin,int dev_midiout)
       else
         printf("PortMIDI: selected input device %d: '%s'\n",
                dev_midiin, info->name);
-		indev = dev_midiin;
-		
-#ifdef NOTDEF
       retval = Pm_OpenInput(&midistream,
                             (PmDeviceID) portMidi_getRealDeviceID(dev_midiin, 0),
                             NULL, 512L, (PmTimeProcPtr) NULL, NULL);
@@ -250,12 +281,11 @@ inits(int dev_midiin,int dev_midiout)
               dev_midiin, Pm_GetErrorText(retval));
         exit(1);
       }
-		/*       *userData = (void*) midistream; */
+/*       *userData = (void*) midistream; */
       /* empty the buffer after setting filter */
       while (Pm_Poll(midistream) == TRUE) {
         Pm_Read(midistream, &buffer, 1);
       }
-#endif
     }
     {
       PmError     retval;
@@ -263,11 +293,12 @@ inits(int dev_midiin,int dev_midiout)
       PortMidiStream *midistream;
 
       /* check if there are any devices available */
-		cnt_outdev = portMidi_getDeviceCount(1);
-		if (cnt_outdev < 1) {
-			/* return*/ printf("no output devices are available\n");
+      cntdev = portMidi_getDeviceCount(1);
+      if (cntdev < 1) {
+        printf("no output devices are available\n");
+        return;
       }
-		if (dev_midiout < 0 || dev_midiout >= cnt_outdev) {
+      if (dev_midiout < 0 || dev_midiout >= cntdev) {
         printf("error: device number is out of range\n");
         exit(1);
       }
@@ -278,9 +309,6 @@ inits(int dev_midiin,int dev_midiout)
       else
         printf("PortMIDI: selected output device %d: '%s'\n",
                dev_midiout, info->name);
-		
-		outdev = dev_midiout + cnt_indev;
-#ifdef NOTDEF
       retval = Pm_OpenOutput(&midistream,
                              (PmDeviceID) portMidi_getRealDeviceID(dev_midiout, 1),
                              NULL, 512L, (PmTimeProcPtr) NULL, NULL, 0L);
@@ -289,7 +317,6 @@ inits(int dev_midiin,int dev_midiout)
                dev_midiout, Pm_GetErrorText(retval));
         exit(1);
       }
-#endif
       /*     *userData = (void*) midistream; */
     }
 
@@ -301,7 +328,7 @@ midiopen(void)
 {
     TIME_START;
     Pm_OpenInput(&Midiin, 
-                /* 1,*/indev,
+                 1,
                  DRIVER_INFO, 
                  100, 
                  TIME_PROC, 
@@ -316,7 +343,7 @@ midiopen(void)
       }
     }
     Pm_OpenOutput(&Midiout, 
-                  /*2,*/outdev, 
+                  1, 
                   DRIVER_INFO,
                   100, 
                   TIME_PROC, TIME_INFO, 
