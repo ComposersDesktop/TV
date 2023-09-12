@@ -263,7 +263,7 @@ inits(int dev_midiin,int dev_midiout)
       
       /* look up device in list */
       if (dev_midiin < 0 || dev_midiin >= cntdev) {
-        printf("error: device number %d is out of range (%d) \n",dev_midiin,cntdev);  //RWD
+        printf("error(MIDI IN): device number %d is out of range (%d) \n",dev_midiin+1,cntdev);  //RWD
         exit(1);
       }
       info = portMidi_getDeviceInfo(dev_midiin, 0);
@@ -299,7 +299,7 @@ inits(int dev_midiin,int dev_midiout)
         return;
       }
       if (dev_midiout < 0 || dev_midiout >= cntdev) {
-        printf("error: device number is out of range\n");
+          printf("error(MIDI OUT): device number %d is out of range (%d) \n",dev_midiout+1,cntdev);  //RWD
         exit(1);
       }
       info = portMidi_getDeviceInfo(dev_midiout, 1);
