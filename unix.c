@@ -257,8 +257,6 @@ void list_mididevs(void)
 void
 inits(int dev_midiin,int dev_midiout)
 {
-    //int cntdev;
-    //RWD
     int in_cntdev,out_cntdev;
     srand48(time(0));
     
@@ -322,12 +320,12 @@ inits(int dev_midiin,int dev_midiout)
             printf("no output devices are available\n");
             return;
         }
-        if (dev_midiout < 0 || dev_midiout >= out_cntdev) {  // RWD NB: user bvals, not internal PA vals
+        if (dev_midiout < 0 || dev_midiout >= out_cntdev) {
             printf("error(MIDI OUT): device number %d is out of range (%d) \n",dev_midiout+1,out_cntdev);  //RWD
             exit(1);
         }
-        // RWD: PM counts all devices in sequence, e.g. if 2 input devices, outdev numbers start from 2.
-        info = portMidi_getDeviceInfo(dev_midiout + in_cntdev, 1);
+        
+        info = portMidi_getDeviceInfo(dev_midiout, 1);
         if (info->interf != NULL)
             printf("PortMIDI: selected output device %d: '%s' (%s)\n",
                    dev_midiout + 1, info->name, info->interf);
@@ -358,8 +356,7 @@ midiopen(void)
 {
     TIME_START;
     Pm_OpenInput(&Midiin,
-                /* 0, */ g_indev,
- 
+                g_indev,            //RWD
                  DRIVER_INFO,
                  100,
                  TIME_PROC,
@@ -375,7 +372,7 @@ midiopen(void)
         }
     }
     Pm_OpenOutput(&Midiout,
-                 /* 1, */g_outdev,
+                 g_outdev,          // RWD
                   DRIVER_INFO,
                   100,
                   TIME_PROC, TIME_INFO,
