@@ -1,0 +1,21 @@
+//  23 Jan '97 RO  Play one note continuously.  Annotated by AE.
+
+//	NB: TV performances are ended by pressing Control-C.
+
+
+start()
+{
+				//all variables set to 0 on 1st appearance
+	if(init == 0) {		//so, first time, init WILL match a 0
+		call init()	//go to the function init()
+	}
+
+	midiout 0, 60, 60, 1	//channel, pitch, velocity, duration
+loop				//cycle round this script continuously
+}				//this is the end of the main loop
+
+init()				//this is a sub-function
+{
+	init = 1		//now 'if(init == 0)' will fail, so this 
+				//sub-function will only be called once
+}

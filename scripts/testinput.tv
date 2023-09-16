@@ -1,0 +1,8 @@
+start()
+{
+        result = try(chan,pitch,vel midiin)
+        if(result >= 1) {
+                probe result,chan,pitch,vel
+        }
+        loop
+}

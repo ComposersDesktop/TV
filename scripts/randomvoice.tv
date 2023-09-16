@@ -1,0 +1,36 @@
+//  23 Jan '97 RO  Make changes at defined intervals
+//	In this case, the instrument (MIDI sound) is changed, using 
+//	the function 'midiset' (second parameter of).
+//	NB: TV performances are ended by pressing Control-C.
+
+
+start()
+{
+	if(init == 0) {
+		call init()
+	}
+
+	xx = try(midiout chan, random(60,84), random(30,90), dur)
+
+	if(xx > 0) {				//reaches this point every note
+		dur = 0.1 * int(random(1,4))	//calculate a new duration
+		if(n++ > 11) {			//n starts at 0 & increments by 
+						// 1 after each note
+			call change_instr()	//when n reaches 12th note, 
+						//call proc to change voice
+			n = 0			// and reset n
+		}
+	}
+loop
+}
+
+init()
+{
+	init = 1
+}
+
+change_instr()
+{
+	midiset 0, random(0, 128)	//change instrument attached to
+					//channel 0 within 0-128 range
+}

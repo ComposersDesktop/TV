@@ -1,0 +1,54 @@
+//////////////////////////////////////////////////////////////////
+//
+//			'chords3.tv'
+//		A Tabula Vigilans tutorial script
+//
+//	Effect: Chords are built from a series of intervals
+//	taken from a file; these are then performed either
+//	as chords or as up-or-downward arpeggios in short
+//	sequences. The set of intervals selected can be
+//	varied by using an additional commandline argument
+//	(from 0 to 14).
+//
+//////////////////////////////////////////////////////////////////
+table CHORD[4]
+table INTVL[3]
+
+start()
+{
+    midiset 1, 0	// Piano
+    INTVL fill_table "intvls", arg(1)
+    CHORD[0] = 48
+    for(i = 0; i < 3; i+=1) {
+	    CHORD[i+1] = CHORD[i] + INTVL[i]
+    }
+    while(1) {
+        xx = try(midichord 1, CHORD[0], 63, 0.5, 4, arp)
+	    probi xx
+	    if(xx > 0) {
+	        if(CHORD[0] > 76) {
+		        up = 0
+	        }
+	        if(CHORD[0] < 30) {
+		        up = 1
+	        }
+	        if(rand() > 0.94) {
+		        wait 0.6
+	        }
+	        arp = round(rand())
+	        swp = INTVL[0]
+	        INTVL[0] = INTVL[1]
+	        INTVL[1] = INTVL[2]
+	        INTVL[2] = swp
+	        if(up) {
+		        CHORD[0] += INTVL[0]
+	        }
+	        else {
+		        CHORD[0] -= INTVL[0]
+	        }
+	        for(i = 0; i < 3; i+=1) {
+		        CHORD[i+1] = CHORD[i] + INTVL[i]
+	        }
+	    }
+    }
+}
