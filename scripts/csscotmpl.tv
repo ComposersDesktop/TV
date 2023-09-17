@@ -1,0 +1,81 @@
+//cssctmpl.tv - TV script template for writing Csound score files
+
+table  FREQS[12]
+
+start()
+{
+	if(init == 0) {
+		call initialise()
+	}
+
+	call headings()
+
+	call sample_process()
+
+	call ending()
+loop
+}
+
+
+headings()
+{
+	storefile "acsscore.sco"			//filename
+	storstr ";acsscore.sco - a Csound score file\n" //title banner
+	storstr ";\ttemplate example written with TV\n" //purpose
+	storstr "f1 0 1024 10 1 0 0 \n\n"		//an f statement
+	storstr ";instr\tstime\tdur\tamp\tpch\n"	//pfield names
+}
+
+
+sample_process()
+{
+	for(i=0; i < 12; i += 1) {
+		storstr "i"
+		stori instr
+		storstr "\t"
+
+		store stime
+		stime += 0.75
+		storstr "\t"
+
+		store dur
+		dur = random(0.25, 1.5)
+		storstr "\t"
+
+		store amp
+		if(i < 6) {
+			amp += 0.05
+		} else {
+		amp -= 0.05
+		}
+		storstr "\t"
+
+		freq = FREQS[ndx++] //UP: C-Eb-G-A-Bb-C Dwn: C-B-Ab-G-F#-Db
+		store freq
+		storstr "\n"		//create new line of score data
+	}
+}
+
+
+ending()
+{
+	storstr "e"
+	end
+}
+
+
+initialise()
+{
+
+	FREQS fill_table "csscfreq.txt"
+
+	ndx = 0
+	instr = 1		//first instrument
+	stime = 0		//initial start time
+	dur = 1			//default initial duration
+	amp = 0.25		//default initial amplitude
+	freq = 6.00		//default initial frequency (8ve.semitones)
+
+	init = 1
+}
+
