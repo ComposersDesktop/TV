@@ -1,4 +1,3 @@
-// New Version 1.4, combining source of V1.36b with best of V1.38g
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -10,7 +9,7 @@
 #include <memory.h>
 #include "tv.h"
 
-#define VERSION "V1.5f: R.O./JPff Nov 2018"
+#define VERSION "V1.5f: R.O./JPff Nov 2018,2023"
     /* NB This version has improvements by John ffitch  -
           #include,
           ability to declare tables without size, etc...
@@ -36,17 +35,21 @@ int yydebug;
 void
 usage(int lm)
 {
-#ifdef _WIN32
+//#ifdef _WIN32
     fprintf(stderr, "\nUsage:\ttv [-I -iN -oN -v] rule_file");
-#else
-    fprintf(stderr, "Usage:\ttv [-i -v] rule_file");
-#endif
+//#else
+//    fprintf(stderr, "Usage:\ttv [-i -v] rule_file");
+//#endif
 /*  fprintf(stderr, "\n\twhere\t-d = dump global variables,");*/
     fprintf(stderr, "\n\t\t-I = immediate performance,");
 /*  fprintf(stderr, "\n\t\t-p = show pass 1 parser state,");*/
     fprintf(stderr, "\n\t\t-v = verbose mode\n");
     fprintf(stderr,"\n\t\t-iN = use MIDI IN device N (N > 0)");
+#ifdef _WIN32
+    fprintf(stderr,"\n\t\t-oN = use MIDI OUT device N (N >= 0)\n");
+#else
     fprintf(stderr,"\n\t\t-oN = use MIDI OUT device N (N > 0)\n");
+#endif
     list_mididevs();
 
     if(lm) list_mididevs();
@@ -73,8 +76,7 @@ main(int argc, char *argv[])
     if(argc > 1)
     {
         for(i=0; i < argc; i++) {
-
-                        char *pt;
+            char *pt;
             if(strncmp(argv[i], "form.", 5) == 0) {
                  strncpy(formfile, argv[i], 20);
                 formfile[19]='\0';
