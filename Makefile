@@ -1,5 +1,5 @@
 #	Makefile for TABULA VIGILANS
-CFLAGS = -g -Wall
+CFLAGS = -g -Wall -Dlinux
 CXXFLAGS = -g -DOSC_HOST_LITTLE_ENDIAN=1 -I OSC
 LIBDIR = 
 LIBS = -lportmidi -lporttime -lasound -lm -lstdc++

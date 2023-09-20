@@ -45,7 +45,7 @@ void	filltables(TableS *tab, char *filename,
 Sfile *sfile = NULL;
 int	decdig = 2;
 
-static	int initexprlist(Exprlist *el);
+//static	int initexprlist(Exprlist *el);
 
 double
 eval(Expr *e, Cell *params)
@@ -263,13 +263,13 @@ execute(Program *prog)
 		errmsg = "break";
 		break;
 	default:
-		errmsg = 0;
+		errmsg = NULL;
 		break;
 	}
 	if(errmsg) {
 		assert(brkcont_lab != 0);
 		fprintf(stderr, "%s statement cannot find label %s\n",
-			errmsg, brkcont_lab);
+			errmsg, brkcont_lab->picture);
 	}
 
 	if(sndoverflows > 0)
@@ -379,6 +379,7 @@ execproc(Proc *pp, Exprlist *el, Cell *params)
 
 again:
 	switch(rs = exec(pp->body, nparams)) {
+        case normal:;
 	case returning:
 		break;
 
@@ -487,6 +488,7 @@ doforwhile(Statement *pc, Cell *params)
 
 		case looping:
 		case returning:
+                case normal:
 			return rs;
 		}
 
@@ -502,6 +504,7 @@ doforwhile(Statement *pc, Cell *params)
 				return conting;
 			case looping:
 			case returning:
+                        case normal:
 				return rs;
 			}
 	}
@@ -681,7 +684,7 @@ exec(Statement *pc, Cell *params)
 		      int cnt=0;
 
 		      el = pc->el; /* reset to transfer data */
-		      while(el=el->next) {
+		      while((el=el->next)) {
 			vals[cnt++] = eval(el->e, NULL);
 		      }
 		      do_send(sexp(pc->string,params), (int)eval(pc->cond, params),
@@ -866,7 +869,7 @@ filltable(Table *tab, char *s, Exprlist *el, Cell *params)
 
 	i = 0; j = 0;
 
-	while(fscanf(fp, "%s", &str) != EOF) {
+	while(fscanf(fp, "%s", str) != EOF) {
 	    if(strncmp(str, "//", 2) != 0) {
 	      j++;
 	      temp = atof(str);
@@ -894,13 +897,13 @@ filltables(TableS *tab, char *s, Exprlist *el, Cell *params)
 {
 	FILE	*fp;
 	char	str[MAXSTRING];
-	int	i, j, offset = 0, size;
+	int	i, /*j, offset = 0,*/ size;
 	int	defer = (tab->tabdim.sizes[0]<0); /* Deferred? */
 	int	alloc;	    /* current allocation */
 	size = tab->tabdim.sizes[0];
 
 	if(el != 0)
-		offset = (int)(eval(el->e, params) + 0.5);
+          (void) /* offset = (int)*/(eval(el->e, params) + 0.5);
 
 	if (defer) {
 	  tab->mem = (char*)malloc(20 * MAXSTRING);
@@ -918,7 +921,7 @@ filltables(TableS *tab, char *s, Exprlist *el, Cell *params)
 	    tidy_up(0);
 	}
 
-	i = 0; j = 0;
+	i = 0; //j = 0;
 
 	while(fgets(str,MAXSTRING, fp)) {
 	  if (defer && i>=alloc) {

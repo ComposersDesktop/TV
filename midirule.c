@@ -213,10 +213,10 @@ struct echodata {
 int
 i_midiecho(void **dp)
 {
-	struct echodata *ed;
+    //	struct echodata *ed;
 
 	*dp = emalloc(sizeof(struct echodata));
-	ed = (struct echodata *)*dp;
+    //	ed = (struct echodata *)*dp;
 
 	return 1;
 }

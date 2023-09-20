@@ -62,9 +62,9 @@ main(int argc, char *argv[])
 {
     /*RWD 4:2001 use 0 to signal MIDI_MAPPER. NB no MIDI_MAPPER for input !*/
 #ifdef WIN32
-    int midi_indev = 1, midi_outdev = 0, listmidi = 0;
+    int midi_indev = 1, midi_outdev = 0;
 #else
-    int midi_indev = 1, midi_outdev = 1, listmidi = 0;
+    int midi_indev = 1, midi_outdev = 1;
 #endif
     int cnt;
     unsigned int i;
@@ -94,7 +94,7 @@ main(int argc, char *argv[])
                             char s[MAXSTRING];
                             char c[MAXSTRING];
                             char *ss[MAXTABNAMES];
-                            int i, j;
+                            int /*i, */ j;
                             static int g=0, acnt = 0, cnt=0;
                             // How many files?
                             while(!feof(strfile)) {
@@ -203,12 +203,21 @@ main(int argc, char *argv[])
                         usage(1);
                         break;
                     }
+#ifdef linux
+                    midi_outdev = atoi(&(argv[1][2]))-1;
+                    if(midi_outdev < 0){
+                        fprintf(stderr,"\nMIDI Out device must be > 0");
+                        usage(1);
+                        break;
+                    }
+#else
                     midi_outdev = atoi(&(argv[1][2]));
                     if(midi_outdev < 1){
                         fprintf(stderr,"\nMIDI Out device must be > 0");
                         usage(1);
                         break;
                     }
+#endif
                     break;
                 case 'i':
                     if(argv[1][2]== '\0'){
@@ -216,16 +225,25 @@ main(int argc, char *argv[])
                         usage(1);
                         break;
                     }
+#ifdef linux
+                    midi_indev = atoi(&(argv[1][2]))-1;
+                    if(midi_indev <0){
+                        fprintf(stderr,"\nMIDI In device must be > 0");
+                        usage(1);
+                        break;
+                    }
+#else
                     midi_indev = atoi(&(argv[1][2]));
                     if(midi_indev <1){
                         fprintf(stderr,"\nMIDI In device must be > 0");
                         usage(1);
                         break;
                     }
+#endif
                     break;
-                case 'M':
-                    listmidi = 1;
-                    break;
+                /* case 'M': */
+                /*     listmidi = 1; */
+                /*     break; */
 
                 default:
                     break;
@@ -236,13 +254,11 @@ main(int argc, char *argv[])
     }
     if(argc < 2) {
         printf("TABULA VIGILANS: Version %s\n", VERSION);
-        if(listmidi) usage(1);
-        else usage(0);
     }
 
     infiles = (FILES*)malloc(sizeof(FILES));
 
-    /*int*/ len = strlen(argv[1]) + 5;
+    //*int*/ len = strlen(argv[1]) + 5;
     ruleflnm = calloc(len, sizeof(char));
     strcpy(ruleflnm, argv[1]);
 
@@ -303,7 +319,7 @@ main(int argc, char *argv[])
     }
 
 
-    inits(midi_indev -1,midi_outdev -1);
+    inits(midi_indev,midi_outdev);
     initsymtab();
     printf("TABULA VIGILANS: Version %s\n", VERSION);
 
