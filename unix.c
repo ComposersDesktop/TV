@@ -14,9 +14,9 @@
 #include "midi.h"
 #include <portmidi.h>
 #include <porttime.h>
-#ifndef __MACH__
+//#ifndef __MACH__
 //#include <stropts.h>
-#endif
+//#endif
 #include <poll.h>
 //RWD
 #include <assert.h>
@@ -32,7 +32,7 @@ current_time(void)
 {
     struct timeval tv;
     struct timezone tz;
-    
+
     if(gettimeofday(&tv, &tz) < 0) {
         fprintf(stderr, "tv: gettimeofday failed!\n");
         exit(1);
@@ -46,15 +46,15 @@ perf_time(int report) /* stores time of performance */
 {
     static int first = 0;
     static time_t starttime;
-    
+
     double secs;
     long mins, hours = 0L, days = 0L;
-    
+
     if(!first) {
         first = 1;
         starttime = current_time();
     }
-    
+
     if(report) {
         secs = (current_time() - starttime)/(double)TICKSPERSEC;
         mins = 0.5 + (long)(secs/60.0);
@@ -67,7 +67,7 @@ perf_time(int report) /* stores time of performance */
             days = hours/24;
             hours %= 24;
         }
-        
+
         if(days) {
             if(days == 1) {
                 if(hours == 1)
@@ -137,7 +137,7 @@ static int portMidi_getDeviceCount(int output)
 {
     int           i, cnt1, cnt2;
     PmDeviceInfo  *info;
-    
+
     cnt1 = (int)Pm_CountDevices();
     if (cnt1 < 1)
         return cnt1;      /* no devices */
@@ -156,13 +156,23 @@ static int portMidi_getRealDeviceID(int dev, int output)
 {
     int           i, j, cnt;
     PmDeviceInfo  *info;
-    
+
     cnt = (int)Pm_CountDevices();
     i = j = -1;
     while (++i < cnt) {
+#ifdef linux
+      printf("*** %d %d %d\n", i, j, dev);
+#endif
         info = (PmDeviceInfo*)Pm_GetDeviceInfo((PmDeviceID) i);
-        if ((output && !(info->output)) || (!output && !(info->input)))
-            continue;
+#ifndef linux
+      if ((output && !(info->output)) || (!output && !(info->input)))
+#else
+      if ((output && !(info->output)) || (!output && !(info->input)))
+#endif
+         continue;
+#ifdef linux
+      printf("** %d %d %d\n", i, j,dev);
+#endif
         if (++j == dev)
             return i;
     }
@@ -172,55 +182,48 @@ static int portMidi_getRealDeviceID(int dev, int output)
 static PmDeviceInfo *portMidi_getDeviceInfo(int dev, int output)
 {
     int i;
-    
+
     i = portMidi_getRealDeviceID(dev, output);
     if (i < 0)
         return NULL;
     return ((PmDeviceInfo*)Pm_GetDeviceInfo((PmDeviceID) i));
 }
 /* RWD 09 -23: make text output compatible with win32 version */
-#if 0
+
+#ifdef linux
+/* JPff sfter portmidi/pm_tests/pmlst.c  */
+
 void list_mididevs(void)
 {
-    int           i, cnt;
-    PmDeviceInfo  *info;
-    
-    cnt = portMidi_getDeviceCount(0);
-    if (cnt >= 1) {
-        printf("The available MIDI in devices are:\n");
-        for (i = 0; i < cnt; i++) {
-            info = portMidi_getDeviceInfo(i, 0);
-            if (info->interf != NULL)
-                printf(" %3d: %s (%s)\n", i, info->name, info->interf);
-            else
-                printf(" %3d: %s\n", i, info->name);
-        }
-    }
-    else
-        printf("No available MIDI in devices\n");
-    cnt = portMidi_getDeviceCount(1);
-    if (cnt >= 1) {
-        printf("The available MIDI out devices are:\n");
-        for (i = 0; i < cnt; i++) {
-            info = portMidi_getDeviceInfo(i, 1);
-            if (info->interf != NULL)
-                printf(" %3d: %s (%s)\n", i, info->name, info->interf);
-            else
-                printf(" %3d: %s\n", i, info->name);
-        }
-        g_cnt_indev = cnt;  //RWD
-    }
-    else
-        printf("No available MIDI out devices\n");
-}
+    const char *deflt;
+    const char *in_or_out;
+    int default_in, default_out, i, n;
 
+    // Pm_Initialize();
+    /* list device information */
+    n = Pm_CountDevices();
+    default_in = n-1;//Pm_GetDefaultInputDeviceID();
+    default_out = 0;//Pm_GetDefaultOutputDeviceID();
+    printf("Pm_CountDevices = %d\n", n);
+    for (i = 0; i < n; i++) {
+      const PmDeviceInfo *info = Pm_GetDeviceInfo(i);
+      printf("%d: %s, %s", i+1, info->interf, info->name);
+      deflt = "";
+      if (i == default_out || i == default_in) {
+        deflt = "default ";
+      }
+      in_or_out = (info->input ? "input" : "output");
+      printf(" (%s%s)\n", deflt, in_or_out);
+      g_cnt_indev = n; g_cnt_outdev = n-1;
+    }
+}
 #else
 //RWD add 1 to device numbers for user messages.
 void list_mididevs(void)
 {
     int i, cnt;
     PmDeviceInfo  *info;
-    
+
     cnt = portMidi_getDeviceCount(0);
     if(cnt == 0){
         fprintf(stderr,"No MIDI input devices found\n");
@@ -235,7 +238,7 @@ void list_mididevs(void)
                 printf(" %3d: %s\n", i+1, info->name);
         }
     }
-    
+
     cnt = portMidi_getDeviceCount(1);
     if(cnt == 0){
         fprintf(stderr,"No MIDI output devices found\n");
@@ -257,22 +260,37 @@ void list_mididevs(void)
 void
 inits(int dev_midiin,int dev_midiout)
 {
+#ifndef linux
     int in_cntdev,out_cntdev;
+#else
+    int in_cntdev = Pm_CountDevices(), out_cntdev = Pm_CountDevices()-1;
+#endif
     srand48(time(0));
-    
+
     finish = 0;
     if(signal(SIGINT, SIG_IGN) != SIG_IGN)
         signal(SIGINT, hdlr);
+#ifndef linux
     in_cntdev = portMidi_getDeviceCount(0);
+#else    //    in_cntdev = portMidi_getDeviceCount(0);
+
+#endif
     if (in_cntdev==0) {
         fprintf(stderr,"\nNo MIDI IN device found\n");
     }
     else {
+#ifndef linux
         PmEvent     buffer;
         PmError     retval;
         PmDeviceInfo *info;
         PortMidiStream *midistream;
-        
+#else
+      //        PmEvent     buffer;
+      //        PmError     retval;
+      PmDeviceInfo *info;
+      //        PortMidiStream *midistream;
+#endif
+
         /* look up device in list */
         if (dev_midiin < 0 || dev_midiin >= in_cntdev) {
             printf("error(MIDI IN): device number %d is out of range (%d) \n",dev_midiin+1,in_cntdev);  //RWD
@@ -288,7 +306,7 @@ inits(int dev_midiin,int dev_midiout)
                    dev_midiin + 1, info->name);
         g_cnt_indev = in_cntdev;        //RWD: seems best to do these assignments here
         g_indev = dev_midiin;
-        
+
 //RWD
 #if 0
         retval = Pm_OpenInput(&midistream,
@@ -310,10 +328,18 @@ inits(int dev_midiin,int dev_midiout)
         /*RWD PA counts all devices in order inputs...outputs.
          So we have to add val of in_cntdev to user's dev_midiout, then decrement by 1 for PM
          */
+#ifndef linux
         PmError     retval;
+#else
+        //PmError     retval;
+#endif
         PmDeviceInfo *info;
+#ifndef linux
         PortMidiStream *midistream;
-        
+#else
+        //PortMidiStream *midistream;
+#endif
+
         /* check if there are any devices available */
         out_cntdev = portMidi_getDeviceCount(1);
         if (out_cntdev < 1) {
@@ -324,7 +350,7 @@ inits(int dev_midiin,int dev_midiout)
             printf("error(MIDI OUT): device number %d is out of range (%d) \n",dev_midiout+1,out_cntdev);  //RWD
             exit(1);
         }
-        
+
         info = portMidi_getDeviceInfo(dev_midiout, 1);
         if (info->interf != NULL)
             printf("PortMIDI: selected output device %d: '%s' (%s)\n",
@@ -332,7 +358,7 @@ inits(int dev_midiin,int dev_midiout)
         else
             printf("PortMIDI: selected output device %d: '%s'\n",
                    dev_midiout + 1, info->name);
-        
+
         g_cnt_outdev = out_cntdev;      // RWD as above
         g_outdev = dev_midiout + in_cntdev;
 //RWD
@@ -409,7 +435,11 @@ int
 midiin(struct statement *s, Cell *locals, void **dp)
 {
     PmEvent buffer[1];
+#ifndef linux
     PmError length, status;
+#else
+    PmError status;
+#endif
     int note_received;
     struct  exprlist *data = s->el;
     //    if (Midiout==NULL) return 0;
@@ -417,7 +447,11 @@ midiin(struct statement *s, Cell *locals, void **dp)
         return 0;
     status = Pm_Poll(Midiin);
     if (status == /*TRUE*/ pmGotData) {     //RWD
+#ifndef linux
         length = Pm_Read(Midiin,buffer,1);
+#else
+        (void) Pm_Read(Midiin,buffer,1);
+#endif
         if ((Pm_MessageStatus(buffer[0].message)&0xF0) == NOTEON_TYPE) {
             note_received = NOTE_EVENT;
             /* pass channel to tv input and get next data address */
