@@ -15,7 +15,7 @@
 #include <portmidi.h>
 #include <porttime.h>
 #ifndef __MACH__
-#include <stropts.h>
+//#include <stropts.h>
 #endif
 #include <poll.h>
 //RWD
