@@ -52,7 +52,7 @@ usage(int lm)
 #endif
     list_mididevs();
 
-    if(lm) list_mididevs();
+    //if(lm) list_mididevs();
 
     exit(1);
 }
@@ -258,7 +258,7 @@ main(int argc, char *argv[])
 
     infiles = (FILES*)malloc(sizeof(FILES));
 
-    //*int*/ len = strlen(argv[1]) + 5;
+    len = strlen(argv[1]) + 5;
     ruleflnm = calloc(len, sizeof(char));
     strcpy(ruleflnm, argv[1]);
 

@@ -152,6 +152,25 @@ static int portMidi_getDeviceCount(int output)
     return cnt2;
 }
 
+
+#ifdef linux
+
+static int portMidi_getRealDeviceID(int dev, int output)
+{
+    int n = (int)Pm_CountDevices();
+    PmDeviceInfo  *info;
+    if (dev>n) return -1;
+    if (output) {
+      info = (PmDeviceInfo*)Pm_GetDeviceInfo((PmDeviceID) dev);
+      return (info->output)? dev: -1;
+    }
+    else {
+      info = (PmDeviceInfo*)Pm_GetDeviceInfo((PmDeviceID) dev);
+      return (info->input)? dev: -1;
+    }              
+}
+
+#else
 static int portMidi_getRealDeviceID(int dev, int output)
 {
     int           i, j, cnt;
@@ -160,25 +179,15 @@ static int portMidi_getRealDeviceID(int dev, int output)
     cnt = (int)Pm_CountDevices();
     i = j = -1;
     while (++i < cnt) {
-#ifdef linux
-      printf("*** %d %d %d\n", i, j, dev);
-#endif
         info = (PmDeviceInfo*)Pm_GetDeviceInfo((PmDeviceID) i);
-#ifndef linux
       if ((output && !(info->output)) || (!output && !(info->input)))
-#else
-      if ((output && !(info->output)) || (!output && !(info->input)))
-#endif
          continue;
-#ifdef linux
-      printf("** %d %d %d\n", i, j,dev);
-#endif
         if (++j == dev)
             return i;
     }
     return -1;
 }
-
+#endif
 static PmDeviceInfo *portMidi_getDeviceInfo(int dev, int output)
 {
     int i;
@@ -203,7 +212,7 @@ void list_mididevs(void)
     /* list device information */
     n = Pm_CountDevices();
     default_in = n-1;//Pm_GetDefaultInputDeviceID();
-    default_out = 0;//Pm_GetDefaultOutputDeviceID();
+    default_out = n-2;//Pm_GetDefaultOutputDeviceID();
     printf("Pm_CountDevices = %d\n", n);
     for (i = 0; i < n; i++) {
       const PmDeviceInfo *info = Pm_GetDeviceInfo(i);
@@ -359,8 +368,11 @@ inits(int dev_midiin,int dev_midiout)
             printf("PortMIDI: selected output device %d: '%s'\n",
                    dev_midiout + 1, info->name);
 
+        #ifdef linux
+        g_outdev = dev_midiout;// JPff
+        #else
         g_cnt_outdev = out_cntdev;      // RWD as above
-        g_outdev = dev_midiout + in_cntdev;
+        #endif
 //RWD
 #if 0
         retval = Pm_OpenOutput(&midistream,
@@ -398,12 +410,16 @@ midiopen(void)
         }
     }
     Pm_OpenOutput(&Midiout,
-                 g_outdev,          // RWD
+                  #ifdef linux
+                 g_outdev-1,          // RWD/JPff
+                  #else
+                  g_outdev,
+                  #endif
                   DRIVER_INFO,
                   100,
                   TIME_PROC, TIME_INFO,
                   500);
-    assert(Midiout);  //RWD
+    //    assert(Midiout);  //RWD
 }
 
 void
