@@ -52,7 +52,7 @@ usage(int lm)
 #endif
     list_mididevs();
 
-    //if(lm) list_mididevs();
+//    if(lm) list_mididevs();
 
     exit(1);
 }
@@ -203,21 +203,12 @@ main(int argc, char *argv[])
                         usage(1);
                         break;
                     }
-#ifdef linux
-                    midi_outdev = atoi(&(argv[1][2]))-1;
-                    if(midi_outdev < 0){
-                        fprintf(stderr,"\nMIDI Out device must be > 0");
-                        usage(1);
-                        break;
-                    }
-#else
                     midi_outdev = atoi(&(argv[1][2]));
                     if(midi_outdev < 1){
                         fprintf(stderr,"\nMIDI Out device must be > 0");
                         usage(1);
                         break;
                     }
-#endif
                     break;
                 case 'i':
                     if(argv[1][2]== '\0'){
@@ -225,25 +216,16 @@ main(int argc, char *argv[])
                         usage(1);
                         break;
                     }
-#ifdef linux
-                    midi_indev = atoi(&(argv[1][2]))-1;
-                    if(midi_indev <0){
-                        fprintf(stderr,"\nMIDI In device must be > 0");
-                        usage(1);
-                        break;
-                    }
-#else
                     midi_indev = atoi(&(argv[1][2]));
                     if(midi_indev <1){
                         fprintf(stderr,"\nMIDI In device must be > 0");
                         usage(1);
                         break;
                     }
-#endif
                     break;
-                /* case 'M': */
-                /*     listmidi = 1; */
-                /*     break; */
+               /* case 'M':  */
+               /*     listmidi = 1; */
+               /*     break;        */
 
                 default:
                     break;
@@ -257,7 +239,7 @@ main(int argc, char *argv[])
     }
 
     infiles = (FILES*)malloc(sizeof(FILES));
-
+/* RWD 2023: remove possibility to supply filename without .tv extension */
     len = strlen(argv[1]) + 5;
     ruleflnm = calloc(len, sizeof(char));
     strcpy(ruleflnm, argv[1]);
@@ -268,19 +250,25 @@ main(int argc, char *argv[])
 //    3. scriptname with added .tvd extension - d signifies tv development script.
     if((infile = fopen(argv[1], "r")) == 0) {
         strncpy(ruleflnm, argv[1],20);
+#if 0
         strncat(ruleflnm, ".tv", 20-strlen(ruleflnm));
         ruleflnm[19] = '\0';
         if((infile = fopen(ruleflnm, "r")) == NULL) {
-          strncat(ruleflnm, "s", 20-strlen(ruleflnm));
+#endif
+          strncat(ruleflnm, "d", 20-strlen(ruleflnm));          //RWD was "s" - but is this secret option used anywhere?
           ruleflnm[19] = '\0';
           if((infile = fopen(ruleflnm, "r")) == NULL) {
             fprintf(stderr, "TV: Can't open file '%s' for rules input\n",
                 argv[1]);
             exit(1);
+#if 0
           }
+#endif
         }
         infiles->name = ruleflnm;
-    } else infiles->name = argv[1];
+    }
+    else
+        infiles->name = argv[1];
     infiles->fd = infile;
     {       /* Is this an encrypted file?? */
         int ch = getc(infiles->fd);
@@ -319,7 +307,7 @@ main(int argc, char *argv[])
     }
 
 
-    inits(midi_indev,midi_outdev);
+    inits(midi_indev -1,midi_outdev -1);
     initsymtab();
     printf("TABULA VIGILANS: Version %s\n", VERSION);
 
