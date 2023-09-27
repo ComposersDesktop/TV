@@ -24,7 +24,7 @@ UOBJS=	unix.o
 OOBJS=	IpEndpointName.o OscOutboundPacketStream.o \
 	p_NetworkingUtils.o p_UdpSocket.o do_send.o
 
-all:	tv TAGS encode decode
+all:	tv TAGS
 
 tv:	makefile $(OBJS) $(UOBJS) $(MOBJS) $(OOBJS)
 	$(CC) $(OBJS) $(UOBJS)  $(MOBJS)  $(OOBJS) $(LIBS) -o tv
@@ -60,7 +60,7 @@ TAGS:	$(SRCS) $(HDR) $(MSRCS) $(USRCS) $(OSRCS)
 TV.zip:	Makefile $(SRCS) $(HDR) $(MSRCS) $(ASRCS) $(USRCS) $(OSRCS)
 	zip TV.zip mac.c main.c Makefile Makefile.osx mathfunc.c midi.c \
         midi.h midirule.c pass2.c perm.c prprog.c rules1.c rules2.c \
-	rules.h tab.c tables.c tvdecode.c tvencode.c tv.h tvlex.c tv.y \
+	rules.h tab.c tables.c tv.h tvlex.c tv.y \
         unix.c win32.c xtab.h y.tab.c y.tab.h $(OSRCS) tv-mode.el tv.vim tv.xml
 #
 #dependencies
@@ -74,12 +74,6 @@ y.tab.c:	tv.y
 
 y.tab.h:	tv.y
 	yacc -d -t tv.y
-
-encode:	tvencode.c
-	cc -g -W -o encode tvencode.c
-
-decode: tvdecode.c
-	cc -g -W -o decode tvdecode.c
 
 makefile:	Makefile
 	$(CC) -M $(SRCS) $(MSRCS) $(USRCS) > deps
