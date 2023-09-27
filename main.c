@@ -14,7 +14,7 @@
           #include,
           ability to declare tables without size, etc...
         Encryption ability added November 2005.
-        "system" call added Aug 2007
+        "system" call added Aug 2007; TRMOVED sEP 2023
         "spawn" call - RO added Oct 2007 but removed by JPff
           1.37  - spawn has malloced input args deprecated
           Dynamic memory allocation for ruleflnm, formfile, and strtbl.
@@ -24,9 +24,8 @@
           1.38f now has the capability to process encrypted filltable files. R.O. Nov 2008.
     */
 FILES   *infiles;
-char    ruleflnm[20];
-char    formfile[20];   /* for ScoreBuilder */
-char    strtbl[20];     /* string table of filenames */
+
+char    formfile[80];   /* for ScoreBuilder */
 int immed = 0, midiin_used = 0;
 int midas_used = 0;
 struct  program *prog = 0;
@@ -78,8 +77,8 @@ main(int argc, char *argv[])
         for(i=0; i < argc; i++) {
             char *pt;
             if(strncmp(argv[i], "form.", 5) == 0) {
-                 strncpy(formfile, argv[i], 20);
-                formfile[19]='\0';
+                 strncpy(formfile, argv[i], 80);
+                formfile[79]='\0';
                 printf("\nForm file is: %s\n", formfile);
             }
             //char *pt;
@@ -262,42 +261,17 @@ main(int argc, char *argv[])
     ruleflnm = calloc(len, sizeof(char));
     strcpy(ruleflnm, argv[1]);
 
-// Try opening, in order:
-//    1. scriptname with user-included .tv or .tvd extension.
-//    2. scriptname with added .tv extension - user omitted .tv on commandline.
-//    3. scriptname with added .tvd extension - d signifies tv development script.
-    if((infile = fopen(argv[1], "r")) == 0) {
-        strncpy(ruleflnm, argv[1],20);
-        strncat(ruleflnm, ".tv", 20-strlen(ruleflnm));
-        ruleflnm[19] = '\0';
-        if((infile = fopen(ruleflnm, "r")) == NULL) {
-          strncat(ruleflnm, "s", 20-strlen(ruleflnm));
-          ruleflnm[19] = '\0';
-          if((infile = fopen(ruleflnm, "r")) == NULL) {
-            fprintf(stderr, "TV: Can't open file '%s' for rules input\n",
-                argv[1]);
-            exit(1);
-          }
-        }
-        infiles->name = ruleflnm;
-    } else infiles->name = argv[1];
+    if((infile = fopen(argv[1], "r")) == NULL) {
+      fprintf(stderr, "TV: Can't open file '%s' for rules input\n", argv[1]);
+      exit(1);
+     }
     infiles->fd = infile;
-    {       /* Is this an encrypted file?? */
-        int ch = getc(infiles->fd);
-        infiles->encrypt = (ch=='\0');
-        if (!infiles->encrypt) ungetc(ch, infiles->fd);
-        else {
-            fclose(infiles->fd);
-            infiles->fd = fopen(infiles->name, "rb");
-            getc(infiles->fd);
-        }
-    }
     infiles->next = NULL;
     prog_argc = argc - 2;
     prog_argv = argv + 2;
 
 // Scan rule-file for use of midiin
-    if(!infiles->encrypt) { /* Can only test unencrypted scripts! */
+    {
         char str[MAXSTRING]; char *ss;
         //int lineno = 1;
         while(!feof(infile)) {
