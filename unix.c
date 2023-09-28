@@ -275,7 +275,6 @@ inits(int dev_midiin,int dev_midiout)
     int in_cntdev = Pm_CountDevices(), out_cntdev = Pm_CountDevices()-1;
 #endif
     srand48(time(0));
-
     finish = 0;
     if(signal(SIGINT, SIG_IGN) != SIG_IGN)
         signal(SIGINT, hdlr);
@@ -355,7 +354,7 @@ inits(int dev_midiin,int dev_midiout)
             printf("no output devices are available\n");
             return;
         }
-        if (dev_midiout < 0 || dev_midiout >= out_cntdev) {
+        if (dev_midiout < 0 || dev_midiout > out_cntdev) {
             printf("error(MIDI OUT): device number %d is out of range (%d) \n",dev_midiout+1,out_cntdev);  //RWD
             exit(1);
         }
