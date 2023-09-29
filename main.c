@@ -40,18 +40,17 @@ usage(int lm)
 //    fprintf(stderr, "Usage:\ttv [-i -v] rule_file");
 //#endif
 /*  fprintf(stderr, "\n\twhere\t-d = dump global variables,");*/
-    fprintf(stderr, "\n\t\t-I = immediate performance,");
-/*  fprintf(stderr, "\n\t\t-p = show pass 1 parser state,");*/
-    fprintf(stderr, "\n\t\t-v = verbose mode\n");
-    fprintf(stderr,"\n\t\t-iN = use MIDI IN device N (N > 0)");
+    fprintf(stderr, "\n\t-I = immediate performance,");
+/*  fprintf(stderr, "\n\t-p = show pass 1 parser state,");*/
+    fprintf(stderr, "\n\t-v = verbose mode\n");
+    fprintf(stderr,"\n\t-iN = use MIDI IN device N (N > 0)");
 #ifdef _WIN32
-    fprintf(stderr,"\n\t\t-oN = use MIDI OUT device N (N >= 0)\n");
+    fprintf(stderr,"\n\t-oN = use MIDI OUT device N (N >= 0)\n");
 #else
-    fprintf(stderr,"\n\t\t-oN = use MIDI OUT device N (N > 0)\n");
+    fprintf(stderr,"\n\t-oN = use MIDI OUT device N (N > 0)\n");
 #endif
+    fprintf(stderr,"\n\trule_file.tv = script to run: give full name with extension\n");
     list_mididevs();
-
-//    if(lm) list_mididevs();
 
     exit(1);
 }
@@ -84,26 +83,26 @@ main(int argc, char *argv[])
             //char *pt;
             pt = strpbrk(argv[i], ".");
             if(pt!=NULL && strcmp(pt, ".tab")==0) {
-                          char *strtbl = malloc(strlen(argv[i]) * sizeof(char)+1);
-                          strcpy(strtbl, argv[i]);
-                          if((strfile = fopen(strtbl, "r")) == 0) {
-                            fprintf(stderr, "Can't open file %s\n", strtbl);
-                            exit(1);
-                          } else {
-                            char s[MAXSTRING];
-                            char c[MAXSTRING];
-                            char *ss[MAXTABNAMES];
-                            int /*i, */ j;
-                            static int g=0, acnt = 0, cnt=0;
-                            // How many files?
-                            while(!feof(strfile)) {
-                              if(fgets(s, MAXSTRING, strfile)) {
-                                if(strncmp(s, "//", 2) == 0) {
-                                  continue;
-                                }
-                                cnt += sscanf(s, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-                                              c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c);
-                       }
+                char *strtbl = malloc(strlen(argv[i]) * sizeof(char)+1);
+                strcpy(strtbl, argv[i]);
+                if((strfile = fopen(strtbl, "r")) == 0) {
+                    fprintf(stderr, "Can't open file %s\n", strtbl);
+                    exit(1);
+                } else {
+                    char s[MAXSTRING];
+                    char c[MAXSTRING];
+                    char *ss[MAXTABNAMES];
+                    int /*i, */ j;
+                    static int g=0, acnt = 0, cnt=0;
+                    // How many files?
+                    while(!feof(strfile)) {
+                        if(fgets(s, MAXSTRING, strfile)) {
+                            if(strncmp(s, "//", 2) == 0) {
+                                continue;
+                            }
+                            cnt += sscanf(s, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+                                          c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c);
+                        }
                     }
                     if(cnt > MAXTABNAMES) {
                         fprintf(stderr, "Error: Maximum number of files in a string-table is 10!");
@@ -118,64 +117,64 @@ main(int argc, char *argv[])
                                 continue;
                             }
                         }
-                                    if(g>=cnt) break;
-                                    //                      printf("\nName %s len %d", s, strlen(s));
-                                    // How many files on this line?
-                                    acnt += sscanf(s, "%s%s%s%s%s%s%s%s%s%s", c,c,c,c,c,c,c,c,c,c);
-                                    //                      printf("Count on this line: %d", acnt);
-                                    // Find lengths of string-filenames & allocate memory.
-                                    sscanf(s, "%s", c); j = strlen(c);
-                                    /* 0 */                 ss[g] = malloc(j*sizeof(char));
-                                    sscanf(s, "%s", ss[g]);
-                                    printf("\t%s\n", ss[g++]);
-                                    if(g>=acnt) {strcpy(c, ""); continue;}
-                                    sscanf(s, "%s%s", c,c); j = strlen(c);
-                                    /* 1 */                 ss[g] = malloc(j*sizeof(char));
-                                    sscanf(s, "%s%s", c, ss[g]);
-                                    printf("\t%s\n", ss[g++]);
-                                    if(g>=acnt) {strcpy(c, ""); continue;}
-                                    sscanf(s, "%s%s%s", c,c,c); j = strlen(c);
-                                    /* 2 */                 ss[g] = malloc(j*sizeof(char));
-                                    sscanf(s, "%s%s%s", c,c, ss[g]);
-                                    printf("\t%s\n", ss[g++]);
-                                    if(g>=acnt) {strcpy(c, ""); continue;}
-                                    sscanf(s, "%s%s%s%s", c,c,c,c); j = strlen(c);
-                                    /* 3 */                 ss[g] = malloc(j*sizeof(char));
-                                    sscanf(s, "%s%s%s%s", c,c,c, ss[g]);
-                                    printf("\t%s\n", ss[g++]);
-                                    if(g>=acnt) {strcpy(c, ""); continue;}
-                                    sscanf(s, "%s%s%s%s%s", c,c,c,c,c); j = strlen(c);
-                                    /* 4 */                 ss[g] = malloc(j*sizeof(char));
-                                    sscanf(s, "%s%s%s%s%s", c,c,c,c, ss[g]);
-                                    printf("\t%s\n", ss[g++]);
-                                    if(g>=acnt) {strcpy(c, ""); continue;}
-                                    sscanf(s, "%s%s%s%s%s%s", c,c,c,c,c,c); j = strlen(c);
-                                    /* 5 */                 ss[g] = malloc(j*sizeof(char));
-                                    sscanf(s, "%s%s%s%s%s%s", c,c,c,c,c, ss[g]);
-                                    printf("\t%s\n", ss[g++]);
-                                    if(g>=acnt) {strcpy(c, ""); continue;}
-                                    sscanf(s, "%s%s%s%s%s%s%s", c,c,c,c,c,c,c); j = strlen(c);
-                                    /* 6 */                 ss[g] = malloc(j*sizeof(char));
-                                    sscanf(s, "%s%s%s%s%s%s%s", c,c,c,c,c,c, ss[g]);
-                                    printf("\t%s\n", ss[g++]);
-                                    if(g>=acnt) {strcpy(c, ""); continue;}
-                                    sscanf(s, "%s%s%s%s%s%s%s%s", c,c,c,c,c,c,c,c); j = strlen(c);
-                                    /* 7 */                 ss[g] = malloc(j*sizeof(char));
-                                    sscanf(s, "%s%s%s%s%s%s%s%s", c,c,c,c,c,c,c, ss[g]);
-                                    printf("\t%s\n", ss[g++]);
-                                    if(g>=acnt) {strcpy(c, ""); continue;}
-                                    sscanf(s, "%s%s%s%s%s%s%s%s%s", c,c,c,c,c,c,c,c,c); j = strlen(c);
-                                    /* 8 */                 ss[g] = malloc(j*sizeof(char));
-                                    sscanf(s, "%s%s%s%s%s%s%s%s%s", c,c,c,c,c,c,c,c, ss[g]);
-                                    printf("\t%s\n", ss[g++]);
-                                    if(g>=acnt) {strcpy(c, ""); continue;}
-                                    sscanf(s, "%s%s%s%s%s%s%s%s%s%s", c,c,c,c,c,c,c,c,c,c); j = strlen(c);
-                                    /* 9 */                 ss[g] = malloc(j*sizeof(char));
-                                    sscanf(s, "%s%s%s%s%s%s%s%s%s%s", c,c,c,c,c,c,c,c,c, ss[g]);
-                                    printf("\t%s\n", ss[g]);
-                                }
-                          }
-                        }
+                        if(g>=cnt) break;
+                        //                      printf("\nName %s len %d", s, strlen(s));
+                        // How many files on this line?
+                        acnt += sscanf(s, "%s%s%s%s%s%s%s%s%s%s", c,c,c,c,c,c,c,c,c,c);
+                        //                      printf("Count on this line: %d", acnt);
+                        // Find lengths of string-filenames & allocate memory.
+                        sscanf(s, "%s", c); j = strlen(c);
+                        /* 0 */                 ss[g] = malloc(j*sizeof(char));
+                        sscanf(s, "%s", ss[g]);
+                        printf("\t%s\n", ss[g++]);
+                        if(g>=acnt) {strcpy(c, ""); continue;}
+                        sscanf(s, "%s%s", c,c); j = strlen(c);
+                        /* 1 */                 ss[g] = malloc(j*sizeof(char));
+                        sscanf(s, "%s%s", c, ss[g]);
+                        printf("\t%s\n", ss[g++]);
+                        if(g>=acnt) {strcpy(c, ""); continue;}
+                        sscanf(s, "%s%s%s", c,c,c); j = strlen(c);
+                        /* 2 */                 ss[g] = malloc(j*sizeof(char));
+                        sscanf(s, "%s%s%s", c,c, ss[g]);
+                        printf("\t%s\n", ss[g++]);
+                        if(g>=acnt) {strcpy(c, ""); continue;}
+                        sscanf(s, "%s%s%s%s", c,c,c,c); j = strlen(c);
+                        /* 3 */                 ss[g] = malloc(j*sizeof(char));
+                        sscanf(s, "%s%s%s%s", c,c,c, ss[g]);
+                        printf("\t%s\n", ss[g++]);
+                        if(g>=acnt) {strcpy(c, ""); continue;}
+                        sscanf(s, "%s%s%s%s%s", c,c,c,c,c); j = strlen(c);
+                        /* 4 */                 ss[g] = malloc(j*sizeof(char));
+                        sscanf(s, "%s%s%s%s%s", c,c,c,c, ss[g]);
+                        printf("\t%s\n", ss[g++]);
+                        if(g>=acnt) {strcpy(c, ""); continue;}
+                        sscanf(s, "%s%s%s%s%s%s", c,c,c,c,c,c); j = strlen(c);
+                        /* 5 */                 ss[g] = malloc(j*sizeof(char));
+                        sscanf(s, "%s%s%s%s%s%s", c,c,c,c,c, ss[g]);
+                        printf("\t%s\n", ss[g++]);
+                        if(g>=acnt) {strcpy(c, ""); continue;}
+                        sscanf(s, "%s%s%s%s%s%s%s", c,c,c,c,c,c,c); j = strlen(c);
+                        /* 6 */                 ss[g] = malloc(j*sizeof(char));
+                        sscanf(s, "%s%s%s%s%s%s%s", c,c,c,c,c,c, ss[g]);
+                        printf("\t%s\n", ss[g++]);
+                        if(g>=acnt) {strcpy(c, ""); continue;}
+                        sscanf(s, "%s%s%s%s%s%s%s%s", c,c,c,c,c,c,c,c); j = strlen(c);
+                        /* 7 */                 ss[g] = malloc(j*sizeof(char));
+                        sscanf(s, "%s%s%s%s%s%s%s%s", c,c,c,c,c,c,c, ss[g]);
+                        printf("\t%s\n", ss[g++]);
+                        if(g>=acnt) {strcpy(c, ""); continue;}
+                        sscanf(s, "%s%s%s%s%s%s%s%s%s", c,c,c,c,c,c,c,c,c); j = strlen(c);
+                        /* 8 */                 ss[g] = malloc(j*sizeof(char));
+                        sscanf(s, "%s%s%s%s%s%s%s%s%s", c,c,c,c,c,c,c,c, ss[g]);
+                        printf("\t%s\n", ss[g++]);
+                        if(g>=acnt) {strcpy(c, ""); continue;}
+                        sscanf(s, "%s%s%s%s%s%s%s%s%s%s", c,c,c,c,c,c,c,c,c,c); j = strlen(c);
+                        /* 9 */                 ss[g] = malloc(j*sizeof(char));
+                        sscanf(s, "%s%s%s%s%s%s%s%s%s%s", c,c,c,c,c,c,c,c,c, ss[g]);
+                        printf("\t%s\n", ss[g]);
+                    }
+                }
+            }
         }
         while(argv[1] != 0 && argv[1][0] == '-')
         {
@@ -235,6 +234,7 @@ main(int argc, char *argv[])
     }
     if(argc < 2) {
         printf("TABULA VIGILANS: Version %s\n", VERSION);
+        usage(0);
     }
 
     infiles = (FILES*)malloc(sizeof(FILES));
@@ -251,7 +251,7 @@ main(int argc, char *argv[])
             fprintf(stderr, "TV: Can't open file '%s' for rules input\n",
                 argv[1]);
             exit(1);
-          }
+    }
     infiles->name = ruleflnm;
     infiles->fd = infile;
     infiles->next = NULL;
