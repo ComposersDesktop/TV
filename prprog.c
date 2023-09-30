@@ -57,6 +57,8 @@ prexpr(Expr *e, FILE *f, int level)
 	case '!':	prbiop("OP !=", e, f, level); return;
 	case LESS_EQ:	prbiop("OP <=", e, f, level); return;
 	case GTHAN_EQ:	prbiop("OP >=", e, f, level); return;
+	case ANDAND:	prbiop("OP &&", e, f, level); return;
+	case OROR:	prbiop("OP ||", e, f, level); return;
 
 	case MFUNC:
 		ind(f, level);
@@ -193,7 +195,7 @@ prproc(Proc *proc, FILE *f)
 	ind(f, 1); fprintf(f, "LOCALS\n");
 	for(l = proc->locals; l != 0; l = l->next) {
 		ind(f, 2); fprintf(f, "%s(%p) at offset %d\n",
-				l->name->picture, l->name, i++);
+                                   (l->name? l->name->picture:"no name"), l->name,i++); /* ...but l->name is zero -- JPff */
 		if(l->type == value)
 			prexpr(l->init, f, 3);
 		else if(l->init == 0) {

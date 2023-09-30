@@ -160,6 +160,8 @@ checkexpr(Expr *e, Proc *proc, Program *prog)
 
 	case TRY:
 		return checkrule(e->rule, proc, prog);
+        case LOOP:
+          
 
 	case STRING:
 		return 0; //checkstring(e->string, proc, prog);
@@ -368,6 +370,7 @@ checkstat(Statement *s, Proc *proc, Program *prog)
 		case SHOWARGS:
 		case END:
 		case DECDIG:
+                case TRY:       /* Where should this go>? -- JPff */
 			break;
 
 		case '~':

@@ -883,8 +883,8 @@ filltable(Table *tab, char *s, Exprlist *el, Cell *params)
 	    else {
 		fgets(tempstr, 160, fp); /* find end-of-line */
 	    }
+            //            printf("*** i=%d size=%d\n", i, size); 
 	}
-/*	   printf("i=%d\n", i); */
 	if (defer) {
 	  tab->mem = (double*)realloc(tab->mem, i*sizeof(double));
 	  tab->tabdim.sizes[0] = i;
