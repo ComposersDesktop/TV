@@ -482,6 +482,8 @@ doforwhile(Statement *pc, Cell *params)
 		case looping:
 		case returning:
 			return rs;
+                case normal:
+                  	break;
 		}
 
 		if(pc->code == FOR)
@@ -496,8 +498,9 @@ doforwhile(Statement *pc, Cell *params)
 				return conting;
 			case looping:
 			case returning:
-                        case normal:
 				return rs;
+                        case normal:
+                         	 break;
 			}
 	}
 	return normal;
