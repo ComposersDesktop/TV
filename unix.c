@@ -279,7 +279,7 @@ midiopen(void)
 {
     TIME_START;
     Pm_OpenInput(&Midiin,
-                g_indev,            //RWD
+                 g_indev,            //RWD
                  DRIVER_INFO,
                  100,
                  TIME_PROC,
@@ -295,7 +295,7 @@ midiopen(void)
         }
     }
     Pm_OpenOutput(&Midiout,
-                 g_outdev-1,          // RWD/JPff
+                  g_outdev,          // RWD
                   DRIVER_INFO,
                   100,
                   TIME_PROC, TIME_INFO,
