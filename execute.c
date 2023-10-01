@@ -17,6 +17,7 @@
 #include "rules.h"
 #include "midi.h"
 
+
 enum runstate {
 	breaking,
 	conting,
@@ -43,7 +44,7 @@ void	filltables(TableS *tab, char *filename,
 		 Exprlist *el, Cell *params);
 
 Sfile *sfile = NULL;
-int	decdig = 2;
+int     decdig = 2;
 
 //static	int initexprlist(Exprlist *el);
 
@@ -151,14 +152,14 @@ char *sexp(SEXP *ss, Cell *par)
     if (ss->op == '[') {
       // **** NEED to convert a symbol to a TableS
       for (tt=prog->tables; tt != NULL; tt = tt->next) {
-	//printf("ss->sym = %p against %s\n", ss->sym, tt->name->picture);
-	if (strcmp(ss->sym->picture,tt->name->picture)==0) break;
+        //printf("ss->sym = %p against %s\n", ss->sym, tt->name->picture);
+        if (strcmp(ss->sym->picture,tt->name->picture)==0) break;
       }
       if (tt==NULL)
-	for (tt=prog->globals->value.u.table; tt != NULL; tt = tt->next) {
-	  //printf("ss->sym = %p against %s\n", ss->sym, tt->name->picture);
-	  if (strcmp(ss->sym->picture,tt->name->picture)==0) break;
-	}
+        for (tt=prog->globals->value.u.table; tt != NULL; tt = tt->next) {
+          //printf("ss->sym = %p against %s\n", ss->sym, tt->name->picture);
+          if (strcmp(ss->sym->picture,tt->name->picture)==0) break;
+        }
       return dereftabs(tt, ss->el, par);
     }
     else if (ss->op == INT2STRING) {
@@ -180,17 +181,10 @@ char *sexp(SEXP *ss, Cell *par)
       char *res;
       //printf("concatenation case\n");
       if (ss->string==NULL) ss->string = (char*)calloc(1, MAXSTRING);
-      else *ss->string = '\0';
       while (tt) {
-        int l,t;
-	res = sexp(tt, par);
-        l = strlen(res); t = strlen(ss->string);
-        if (l+t>=MAXSTRING-1) {
-          fprintf(stderr, "String too long\n");
-          l = MAXSTRING-t-1; /* truncate long string */
-        }
-        strncat(ss->string, res, l);
-	tt = tt->next;
+        res = sexp(tt, par);
+        strcat(ss->string, res);
+        tt = tt->next;
       }
       return ss->string;
     }
@@ -202,7 +196,7 @@ execute(Program *prog)
 {
 	Symbol *startsym = lookup("start");
 	Proc *startproc;
-	Global *gl;
+        Global *gl;
 	char *errmsg;
 
 	sndoverflows = 0;
@@ -223,7 +217,7 @@ execute(Program *prog)
 		switch(gl->value.type) {
 		case tableglobal:
 			/* create the table */
-			mktable(gl->value.u.table);
+                        mktable(gl->value.u.table);
 			break;
 		case tableptr:
 			/* null the table reference */
@@ -263,7 +257,7 @@ execute(Program *prog)
 		errmsg = "break";
 		break;
 	default:
-		errmsg = NULL;
+		errmsg = 0;
 		break;
 	}
 	if(errmsg) {
@@ -289,20 +283,19 @@ clearscreen(void)
 #ifdef _WIN32
 	cls();
 #else
-	printf("\f");
+        printf("\f");
 #endif
 }
 
 void
 close_storefiles(void)
 {
-	while (sfile) {
-		write(sfile->storefd, sfile->store_buf, strlen(sfile->store_buf));
-		close(sfile->storefd);
-		sfile = sfile->next;
+    while (sfile) {
+        write(sfile->storefd, sfile->store_buf, strlen(sfile->store_buf));
+        close(sfile->storefd);
+        sfile = sfile->next;
     }
 }
-
 
 void
 tidy_up(int flag)
@@ -312,10 +305,10 @@ tidy_up(int flag)
 	if(flag)
 	    perf_time(1);
 	while (sfile) {
-		write(sfile->storefd, sfile->store_buf, strlen(sfile->store_buf));
-		close(sfile->storefd);
-		sfile = sfile->next;
-	}
+	    	write(sfile->storefd, sfile->store_buf, strlen(sfile->store_buf));
+                close(sfile->storefd);
+                sfile = sfile->next;
+        }
 	exit(0);
 }
 
@@ -324,8 +317,8 @@ execproc(Proc *pp, Exprlist *el, Cell *params)
 {
 	int i;
 	Cell *nparams = NULL;
-	Param *parp = pp->plist;
-	Local *locp = pp->locals;
+        Param *parp = pp->plist;
+        Local *locp = pp->locals;
 	enum runstate rs;
 
 	assert(pp != NULL);
@@ -379,8 +372,8 @@ execproc(Proc *pp, Exprlist *el, Cell *params)
 
 again:
 	switch(rs = exec(pp->body, nparams)) {
-        case normal:;
 	case returning:
+        case normal:
 		break;
 
 	case looping:
@@ -458,7 +451,7 @@ dostrass(SEXP *e, char *str, Cell *params)
 	//}
 
 	dst = sexp(e, params);
-	strncpy(dst, str, MAXSTRING);
+        strncpy(dst, str, MAXSTRING);
 }
 
 static enum runstate
@@ -488,7 +481,6 @@ doforwhile(Statement *pc, Cell *params)
 
 		case looping:
 		case returning:
-                case normal:
 			return rs;
 		}
 
@@ -517,9 +509,9 @@ doswitch(double d, Statement *pc, Cell *params)
     Cases *s = (Cases*)pc->body1;
 /*     printf("Switch on %f\n", d); */
     while (s) {
-/*	 printf("Compare %f and %f\n", d, s->val); */
+/*       printf("Compare %f and %f\n", d, s->val); */
       if (d == s->val) {
-	return exec(s->body, params);
+        return exec(s->body, params);
       }
       s = s->next;
     }
@@ -559,10 +551,10 @@ exec(Statement *pc, Cell *params)
 				rs = exec(pc->body1, params);
 			break;
 
-		case SWITCH:
-			d = eval(pc->cond, params);
-			rs = doswitch(d, pc, params);
-			break;
+                case SWITCH:
+                        d = eval(pc->cond, params);
+                        rs = doswitch(d, pc, params);
+                        break;
 		case END:
 			printf("\nScript ending");
 			tidy_up(1);
@@ -571,22 +563,19 @@ exec(Statement *pc, Cell *params)
 			break;
 		case FILLTABLE:
 			filltable(LGVAR(pc->cond, params)->u.table,
-				  sexp(pc->string, params),
+                                  sexp(pc->string, params),
 					pc->el, params);
 			break;
 		case FILLTABLEA:
 			filltable(LGVAR(pc->cond, params)->u.table,
-				  mf_args(eval(pc->elr->e, params)),
-				  pc->el, params);
+                                  mf_args(eval(pc->elr->e, params)),
+                                  pc->el, params);
 			break;
 		case FILLTABLES:
-		  filltables((TableS*)LGVAR(pc->cond, params)->u.table,
-			     sexp(pc->string, params),
+                  filltables((TableS*)LGVAR(pc->cond, params)->u.table,
+                             sexp(pc->string, params),
 					pc->el, params);
 			break;
-		case SHOWARGS:
-             		fprintf(stdout, "%s", mf_args(eval(pc->cond, params)));
-             		break;
 
 		case FOR:
 		case WHILE:
@@ -594,117 +583,116 @@ exec(Statement *pc, Cell *params)
 			break;
 
 		case RULE:
-			
+                        
 			(void)pc->rule->exec(pc,
 					params,
 					&params[pc->ruledataoffset].u.ruledata);
 			break;
 
 		case STOREFILE:
-		  {
-                    char *ss;
-		    Sfile *s = sfile;
-		    while (s) {
-		      /*printf("%p: Compare %d %d\n",
-			     s, s->fnum, pc->ruledataoffset);*/
-		      if (s->fnum == pc->ruledataoffset)
-			goto out;
-		      s = s->next;
-		    }
-		    s = (Sfile*)malloc(sizeof(Sfile));
-		    s->next = sfile; sfile = s;
-		     if (pc->cond == NULL) {
-		      ss = sexp(pc->string, params);
+                  {
+                    Sfile *s = sfile;
+                    char *ss = sexp(pc->string, params);
+                    while (s) {
+                      /*printf("%p: Compare %d %d\n",
+                             s, s->fnum, pc->ruledataoffset);*/
+                      if (s->fnum == pc->ruledataoffset)
+                        goto out;
+                      s = s->next;
+                    }
+                    s = (Sfile*)malloc(sizeof(Sfile));
+                    s->next = sfile; sfile = s;
+                     if (pc->cond == NULL) {
                       s->storefile = malloc(strlen(ss)+1);
-		      strcpy(s->storefile, ss); /* Safe by construction */
-		    }
-		    else {	/* STOREFILEA */
-		      char *a = mf_args(eval(pc->cond, params));
-		      s->storefile = malloc(strlen(a)+1);
-		      strcpy(s->storefile, a); /* Safe by construction */
-		    }
-		    s->store_buf = (char *)calloc(sizeof(char), 2048);
-		    if((s->storefd = open(s->storefile,
-					  O_CREAT | O_RDWR | O_TRUNC,
-					  0644)) < 0)
-		      {
-			fprintf(stderr, "\nCan't open store-file %s",
-				s->storefile);
-			tidy_up(0);
-		      }
-		    s->fnum = pc->ruledataoffset;
-		  out:
-		    break;
-		  }
+                      strcpy(s->storefile, ss);
+                    }
+                    else {      /* STOREFILEA */
+                      char *a = mf_args(eval(pc->cond, params));
+                      s->storefile = malloc(strlen(a)+1);
+                      strcpy(s->storefile, a);
+                    }
+                    s->store_buf = (char *)calloc(sizeof(char), 2048);
+                    if((s->storefd = open(s->storefile,
+                                          O_CREAT | O_RDWR | O_TRUNC,
+                                          0644)) < 0)
+                      {
+                        fprintf(stderr, "\nCan't open store-file %s",
+                                s->storefile);
+                        tidy_up(0);
+                      }
+                    s->fnum = pc->ruledataoffset;
+                  out:
+                    break;
+                  }
 
 		case STORSTR:
-		  {
-		    Sfile *s = sfile;
-		    while (s) {
-		      if (s->fnum == pc->ruledataoffset) break;
-		      s = s->next;
-		    }
-		    if (s==NULL)
-		      {
-			fprintf(stderr, "Storefile not allocated for storstr");
-			tidy_up(0);
-		      }
-		    if (pc->cond == NULL) {
-		      strcat(s->store_buf, sexp(pc->string, params));
-		    }
-		    else {
-		      char *a = mf_args(eval(pc->cond, params));
-		      strcat(s->store_buf, a);
-		    }
-		    if(strlen(s->store_buf) > 1024) {
-		      int check = write(s->storefd, s->store_buf, 1024);
-		      if(check != 1024) {
-			fprintf(stderr, "\nSTORSTR: Storefile write failure!");
-			tidy_up(0);
-		      }
-		      memcpy(s->store_buf, s->store_buf + 1024, 1024);
-		    }
-		    break;
-		  }
-		case OPSYSCALL:
-		  {
-		    system(sexp(pc->string,params));
-		    break;
-		  }
-		case SEND:
-		  {
-		    int size = 0;
-		    Exprlist *el = pc->el;
-		    do {	/* Cont number of arguments */
-		      size++; el = el->next;
-		    } while (el);
-		    {
-		      extern void do_send(char*, int, char*, double[], int);
-		      double *vals = (double*)malloc(size*sizeof(double));
-		      int cnt=0;
+                  {
+                    Sfile *s = sfile;
+                    while (s) {
+                      if (s->fnum == pc->ruledataoffset) break;
+                      s = s->next;
+                    }
+                    if (s==NULL)
+                      {
+                        fprintf(stderr, "Storefile not allocated for storstr");
+                        tidy_up(0);
+                      }
+                    if (pc->cond == NULL) {
+                      strcat(s->store_buf, sexp(pc->string, params));
+                    }
+                    else {
+                      char *a = mf_args(eval(pc->cond, params));
+                      strcat(s->store_buf, a);
+                    }
+                    if(strlen(s->store_buf) > 1024) {
+                      int check = write(s->storefd, s->store_buf, 1024);
+                      if(check != 1024) {
+                        fprintf(stderr, "\nSTORSTR: Storefile write failure!");
+                        tidy_up(0);
+                      }
+                      memcpy(s->store_buf, s->store_buf + 1024, 1024);
+                    }
+                    break;
+                  }
+                case OPSYSCALL:
+                  {
+                    system(sexp(pc->string,params));
+                    break;
+                  }
+                case SEND:
+                  {
+                    int size = 0;
+                    Exprlist *el = pc->el;
+                    do {        /* Cont number of arguments */
+                      size++; el = el->next;
+                    } while (el);
+                    {
+                      extern void do_send(char*, int, char*, double[], int);
+                      double *vals = (double*)malloc(size*sizeof(double));
+                      int cnt=0;
 
-		      el = pc->el; /* reset to transfer data */
-		      while((el=el->next)) {
-			vals[cnt++] = eval(el->e, NULL);
-		      }
-		      do_send(sexp(pc->string,params), (int)eval(pc->cond, params),
-			      sexp((struct sexpr*)pc->body1, params), vals, cnt);
-		      free(vals);
-		    }
-		    break;
-		  }
+                      el = pc->el; /* reset to transfer data */
+                      while((el=el->next)) {
+                        vals[cnt++] = eval(el->e, NULL);
+                      }
+                      do_send(sexp(pc->string,params), (int)eval(pc->cond, params),
+                              sexp((struct sexpr*)pc->body1, params), vals, cnt);
+                      free(vals);
+                    }
+                    break;
+                  }
 
-		case DECDIG:
-			decdig = pc->ruledataoffset;
-			/*printf("DECDIG set to %d\n", decdig);*/
-			break;
+                case DECDIG:
+                        decdig = pc->ruledataoffset;
+                        /*printf("DECDIG set to %d\n", decdig);*/
+                        break;
 		case '=':
 			doassop(pc->cond, params);
 			break;
 
-		case '~':
-			dostrass((SEXP*)pc->el, sexp(pc->string,params), params);
-			break;
+                case '~':
+                        dostrass((SEXP*)pc->el, sexp(pc->string,params), params);
+                        break;
 
 		case BREAK:
 			rs = breaking;
@@ -750,16 +738,16 @@ mktable(Table *tab)
 	int size = 1;
 	int i;
 
-	if (tab->tabdim.sizes[0]>=0) { /* Not for delayed tables */
-	  for(i = 0; i < tab->tabdim.dimensions; i++)
-	    size *= tab->tabdim.sizes[i];
+        if (tab->tabdim.sizes[0]>=0) { /* Not for delayed tables */
+          for(i = 0; i < tab->tabdim.dimensions; i++)
+            size *= tab->tabdim.sizes[i];
 
-	  if(tab->mem == 0)
-	    tab->mem = (double *)emalloc(size * sizeof(double));
+          if(tab->mem == 0)
+            tab->mem = (double *)emalloc(size * sizeof(double));
 
-	  for(i = 0; i < size; i++)
-	    tab->mem[i] = 0.0;
-	}
+          for(i = 0; i < size; i++)
+            tab->mem[i] = 0.0;
+        }
 }
 
 double *
@@ -772,10 +760,10 @@ dereftab(Table *tab, Exprlist *idxs, Cell *params)
 		fprintf(stderr, "TV: attempt to access null table variable\n");
 		tidy_up(0);
 	}
-	if (tab->tabdim.sizes[0]<0) {
+        if (tab->tabdim.sizes[0]<0) {
 		fprintf(stderr, "TV: attempt to access empty table variable\n");
 		tidy_up(0);
-	}
+        }
 	ptr = tab->mem;
 
 	for(i = 0; i < tab->tabdim.dimensions; i++) {
@@ -803,23 +791,23 @@ char *
 dereftabs(Table *tab, Exprlist *idxs, Cell *params)
 {
 	int i;
-	int index = 0;
+        int index = 0;
 	char *ptr;
 
 	if(tab == 0) {
 		fprintf(stderr, "TV: attempt to access null table variable\n");
 		tidy_up(0);
 	}
-	if (tab->tabdim.sizes[0]<0) {
+        if (tab->tabdim.sizes[0]<0) {
 		fprintf(stderr, "TV: attempt to access empty table variable\n");
 		tidy_up(0);
-	}
+        }
 	ptr = (char *)tab->mem;
 
 	for(i = 0; i < tab->tabdim.dimensions; i++) {
 		double didx = eval(idxs->e, params);
 		int idx;
-		//printf("didx = %f\n", didx);
+                //printf("didx = %f\n", didx);
 		if(!idxs->wrap) {
 			didx -= floor(didx);
 			idx = (int)(didx * (double)tab->tabdim.sizes[i]);
@@ -845,21 +833,21 @@ filltable(Table *tab, char *s, Exprlist *el, Cell *params)
 	char tempstr[161];
 	char	str[30];
 	int	i, j, offset = 0, size;
-	int	defer = (tab->tabdim.sizes[0]<0); /* Deferred? */
-	int	alloc;	    /* current allocation */
-	size = tab->tabdim.sizes[0];
+        int     defer = (tab->tabdim.sizes[0]<0); /* Deferred? */
+        int     alloc;      /* current allocation */
+        size = tab->tabdim.sizes[0];
 	if(el != 0)
 		offset = (int)(eval(el->e, params) + 0.5);
 
-	if (defer) {
-	  tab->mem = (double*)malloc(1024 * sizeof(double));
-	  alloc = 1024;
-	  tab->tabdim.sizes[0] = size = alloc;
-	}
-	else {
-	  for(i = 0; i < tab->tabdim.dimensions; i++)
-	    size *= tab->tabdim.sizes[i];
-	}
+        if (defer) {
+          tab->mem = (double*)malloc(1024 * sizeof(double));
+          alloc = 1024;
+          tab->tabdim.sizes[0] = size = alloc;
+        }
+        else {
+          for(i = 0; i < tab->tabdim.dimensions; i++)
+            size *= tab->tabdim.sizes[i];
+        }
 
 	fp = fopen(s, "r");
 	if(fp == NULL) {
@@ -871,24 +859,24 @@ filltable(Table *tab, char *s, Exprlist *el, Cell *params)
 
 	while(fscanf(fp, "%s", str) != EOF) {
 	    if(strncmp(str, "//", 2) != 0) {
-	      j++;
-	      temp = atof(str);
-	      if (defer && i>=alloc) {
-		tab->mem = (double*)realloc(tab->mem, (alloc+=1024)*sizeof(double));
-		  tab->tabdim.sizes[0] = size = alloc;
-	      }
-	      if((i < size) && (j >= offset))
-		tab->mem[i++] = temp;
+              j++;
+              temp = atof(str);
+              if (defer && i>=alloc) {
+                tab->mem = (double*)realloc(tab->mem, (alloc+=1024)*sizeof(double));
+                  tab->tabdim.sizes[0] = size = alloc;
+              }
+              if((i < size) && (j >= offset))
+                tab->mem[i++] = temp;
 	    }
 	    else {
 		fgets(tempstr, 160, fp); /* find end-of-line */
 	    }
-            //            printf("*** i=%d size=%d\n", i, size); 
 	}
-	if (defer) {
-	  tab->mem = (double*)realloc(tab->mem, i*sizeof(double));
-	  tab->tabdim.sizes[0] = i;
-	}
+/*         printf("i=%d\n", i); */
+        if (defer) {
+          tab->mem = (double*)realloc(tab->mem, i*sizeof(double));
+          tab->tabdim.sizes[0] = i;
+        }
 	fclose(fp);
 }
 
@@ -896,24 +884,26 @@ void
 filltables(TableS *tab, char *s, Exprlist *el, Cell *params)
 {
 	FILE	*fp;
+        //	double	temp;
+        //	char    tempstr[161];
 	char	str[MAXSTRING];
-	int	i, /*j, offset = 0,*/ size;
-	int	defer = (tab->tabdim.sizes[0]<0); /* Deferred? */
-	int	alloc;	    /* current allocation */
-	size = tab->tabdim.sizes[0];
+	int	i, /*j, offset = 0, */size;
+        int     defer = (tab->tabdim.sizes[0]<0); /* Deferred? */
+        int     alloc;      /* current allocation */
+        size = tab->tabdim.sizes[0];
 
 	if(el != 0)
-          (void) /* offset = (int)*/(eval(el->e, params) + 0.5);
+          (void)(eval(el->e, params) + 0.5);
 
-	if (defer) {
-	  tab->mem = (char*)malloc(20 * MAXSTRING);
-	  alloc = 20;
-	  tab->tabdim.sizes[0] = size = alloc;
-	}
-	else {
-	  for(i = 0; i < tab->tabdim.dimensions; i++)
-	    size *= tab->tabdim.sizes[i];
-	}
+        if (defer) {
+          tab->mem = (char*)malloc(20 * MAXSTRING);
+          alloc = 20;
+          tab->tabdim.sizes[0] = size = alloc;
+        }
+        else {
+          for(i = 0; i < tab->tabdim.dimensions; i++)
+            size *= tab->tabdim.sizes[i];
+        }
 
 	fp = fopen(s, "r");
 	if(fp == NULL) {
@@ -924,20 +914,20 @@ filltables(TableS *tab, char *s, Exprlist *el, Cell *params)
 	i = 0; //j = 0;
 
 	while(fgets(str,MAXSTRING, fp)) {
-	  if (defer && i>=alloc) {
-	    tab->mem = (char*)realloc(tab->mem, (alloc+=20)*MAXSTRING);
-	    tab->tabdim.sizes[0] = size = alloc;
-	  }
-	  if(i < size) {
-	    char *p = strchr(str, '\n');
-	    if (p) *p = '\0';
-	    strncpy(&tab->mem[MAXSTRING*i++], str, MAXSTRING-1);
-	  }
-	}
-/*	   printf("i=%d\n", i); */
-	if (defer) {
-	  tab->mem = (char*)realloc(tab->mem, i*MAXSTRING);
-	  tab->tabdim.sizes[0] = i;
-	}
+          if (defer && i>=alloc) {
+            tab->mem = (char*)realloc(tab->mem, (alloc+=20)*MAXSTRING);
+            tab->tabdim.sizes[0] = size = alloc;
+          }
+          if(i < size) {
+            char *p = strchr(str, '\n');
+            if (p) *p = '\0';
+            strncpy(&tab->mem[MAXSTRING*i++], str, MAXSTRING-1);
+          }
+        }
+/*         printf("i=%d\n", i); */
+        if (defer) {
+          tab->mem = (char*)realloc(tab->mem, i*MAXSTRING);
+          tab->tabdim.sizes[0] = i;
+        }
 	fclose(fp);
 }
