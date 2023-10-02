@@ -152,7 +152,7 @@ static int portMidi_getDeviceCount(int output)
     return cnt2;
 }
 
-
+#ifdef linux
 static int portMidi_getRealDeviceID(int dev, int output)
 {
     int n = (int)Pm_CountDevices();
@@ -167,6 +167,24 @@ static int portMidi_getRealDeviceID(int dev, int output)
       return (info->input)? dev: -1;
     }              
 }
+#else
+static int portMidi_getRealDeviceID(int dev, int output)
+{
+    int           i, j, cnt;
+    PmDeviceInfo  *info;
+    
+    cnt = (int)Pm_CountDevices();
+    i = j = -1;
+    while (++i < cnt) {
+        info = (PmDeviceInfo*)Pm_GetDeviceInfo((PmDeviceID) i);
+        if ((output && !(info->output)) || (!output && !(info->input)))
+            continue;
+        if (++j == dev)
+            return i;
+    }
+    return -1;
+}
+#endif
 
 static PmDeviceInfo *portMidi_getDeviceInfo(int dev, int output)
 {
@@ -179,8 +197,8 @@ static PmDeviceInfo *portMidi_getDeviceInfo(int dev, int output)
 }
 /* RWD 09 -23: make text output compatible with win32 version */
 
-/* JPff sfter portmidi/pm_tests/pmlst.c  */
-
+/* JPff after portmidi/pm_tests/pmlst.c  */
+#ifdef linux
 void list_mididevs(void)
 {
     const char *deflt;
@@ -205,11 +223,59 @@ void list_mididevs(void)
       g_cnt_indev = n; g_cnt_outdev = n-1;
     }
 }
+#else
+
+// working Mac code
+//RWD add 1 to device numbers for user messages.
+void list_mididevs(void)
+{
+    int i, cnt;
+    PmDeviceInfo  *info;
+    
+    cnt = portMidi_getDeviceCount(0);  //input devices
+    if(cnt == 0){
+        fprintf(stderr,"No MIDI input devices found\n");
+    }
+    else {
+        printf("\nfound %d MIDI IN devices:\n",cnt);
+        for (i = 0; i < cnt; i++) {
+            info = portMidi_getDeviceInfo(i, 0);
+            if (info->interf != NULL)
+                printf(" %3d: %s (%s)\n", i+1, info->name, info->interf);
+            else
+                printf(" %3d: %s\n", i+1, info->name);
+        }
+    }
+    g_cnt_indev = cnt;  //RWD
+    
+    cnt = portMidi_getDeviceCount(1);   //output devices
+    if(cnt == 0){
+        fprintf(stderr,"No MIDI output devices found\n");
+    }
+    else {
+        printf("found %d MIDI OUT devices:\n",cnt);
+        for (i = 0; i < cnt; i++) {
+            info = portMidi_getDeviceInfo(i, 1);
+            if (info->interf != NULL)
+                printf(" %3d: %s (%s)\n", i+1, info->name, info->interf);
+            else
+                printf(" %3d: %s\n", i+1, info->name);
+        }
+    }
+    g_cnt_outdev = cnt;     //RWD: NB, for PortMidi, first hardware Midi Out device number  = g_indev_cnt;
+}
+
+#endif
 
 void
 inits(int dev_midiin,int dev_midiout)
 {
+#ifdef linux
     int in_cntdev = Pm_CountDevices(), out_cntdev = Pm_CountDevices()-1;
+#else
+    int in_cntdev = portMidi_getDeviceCount(0),
+        out_cntdev = portMidi_getDeviceCount(1);
+#endif
     srand48(time(0));
     finish = 0;
     if(signal(SIGINT, SIG_IGN) != SIG_IGN)
@@ -218,17 +284,17 @@ inits(int dev_midiin,int dev_midiout)
         fprintf(stderr,"\nNo MIDI IN device found\n");
     }
     else {
-      //        PmEvent     buffer;
-      //        PmError     retval;
       PmDeviceInfo *info;
-      //        PortMidiStream *midistream;
-
         /* look up device in list */
         if (dev_midiin < 0 || dev_midiin >= in_cntdev) {
             printf("error(MIDI IN): device number %d is out of range (%d) \n",dev_midiin+1,in_cntdev);  //RWD
             exit(1);
         }
-        info = portMidi_getDeviceInfo(dev_midiin =in_cntdev-1,0);
+#ifdef linux
+        info = portMidi_getDeviceInfo(dev_midiin = in_cntdev-1,0);
+#else
+        info = portMidi_getDeviceInfo(dev_midiin, 0);
+#endif
         //RWD we increment device numbers for user messages.
         if (info) {
           if (info->interf != NULL)
@@ -268,8 +334,10 @@ inits(int dev_midiin,int dev_midiout)
         else
             printf("PortMIDI: selected output device %d: '%s'\n",
                    dev_midiout + 1, info->name);
-
-        g_outdev = dev_midiout;// JPff
+        g_outdev = dev_midiout;
+#ifndef linux
+        g_cnt_outdev = out_cntdev;  //RWD in case we need it
+#endif
     }
 }
 
@@ -279,7 +347,7 @@ midiopen(void)
 {
     TIME_START;
     Pm_OpenInput(&Midiin,
-                 g_indev,            //RWD
+                g_indev,            //RWD
                  DRIVER_INFO,
                  100,
                  TIME_PROC,
@@ -295,7 +363,11 @@ midiopen(void)
         }
     }
     Pm_OpenOutput(&Midiout,
-                  g_outdev,          // RWD
+#ifdef linux
+                 g_outdev,          // RWD/JPff
+#else
+                  g_outdev + g_cnt_indev,
+#endif
                   DRIVER_INFO,
                   100,
                   TIME_PROC, TIME_INFO,
@@ -411,6 +483,8 @@ midiclose(void)
             buffer.timestamp = TIME_PROC(TIME_INFO);
             buffer.message = Pm_Message(0xB0 + i, 0x7B, 0);
             Pm_Write(Midiout, &buffer, 1);
+            //Need to allow time for All-Notes-Off to work
+            Pt_sleep(40);
         }
     }
     if (Midiout || Midiin) Pm_Terminate();
