@@ -484,7 +484,7 @@ midiclose(void)
             buffer.message = Pm_Message(0xB0 + i, 0x7B, 0);
             Pm_Write(Midiout, &buffer, 1);
             //Need to allow time for All-Notes-Off to work
-            Pt_sleep(40);
+            Pt_Sleep(40);
         }
     }
     if (Midiout || Midiin) Pm_Terminate();
