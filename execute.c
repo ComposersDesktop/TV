@@ -748,8 +748,9 @@ mktable(Table *tab)
           if(tab->mem == 0)
             tab->mem = (double *)emalloc(size * sizeof(double));
 
-          for(i = 0; i < size; i++)
-            tab->mem[i] = 0.0;
+          memset(tab->mem, 0, size * sizeof(double));
+          //for(i = 0; i < size; i++)
+          //tab->mem[i] = 0.0;
         }
 }
 
@@ -848,13 +849,13 @@ filltable(Table *tab, char *s, Exprlist *el, Cell *params)
           tab->tabdim.sizes[0] = size = alloc;
         }
         else {
-          for(i = 0; i < tab->tabdim.dimensions; i++)
+          for(i = 1; i < tab->tabdim.dimensions; i++)  //JPff change
             size *= tab->tabdim.sizes[i];
         }
 
 	fp = fopen(s, "r");
 	if(fp == NULL) {
-	    printf("\nCannot open file %s", s);
+	    printf("\nCannot open file %s\n", s);
 	    tidy_up(0);
 	}
 
@@ -868,8 +869,10 @@ filltable(Table *tab, char *s, Exprlist *el, Cell *params)
                 tab->mem = (double*)realloc(tab->mem, (alloc+=1024)*sizeof(double));
                   tab->tabdim.sizes[0] = size = alloc;
               }
-              if((i < size) && (j >= offset))
+              if((i < size) && (j >= offset)) {
+                //printf("*** i = %d j = %d size = %d offset = %d\n", i, j, size, offset);
                 tab->mem[i++] = temp;
+              }
 	    }
 	    else {
 		fgets(tempstr, 160, fp); /* find end-of-line */
@@ -904,13 +907,13 @@ filltables(TableS *tab, char *s, Exprlist *el, Cell *params)
           tab->tabdim.sizes[0] = size = alloc;
         }
         else {
-          for(i = 0; i < tab->tabdim.dimensions; i++)
+          for(i = 1; i < tab->tabdim.dimensions; i++) /* JPff 0-1 */
             size *= tab->tabdim.sizes[i];
         }
 
 	fp = fopen(s, "r");
 	if(fp == NULL) {
-	    printf("\nCannot open file %s", s);
+	    printf("\nCannot open file %s\n", s);
 	    tidy_up(0);
 	}
 
