@@ -4,7 +4,9 @@
 #include <ctype.h>
 #include <math.h>
 #include <string.h>
+#ifndef MAC
 #include <malloc.h>
+#endif
 #include "tv.h"
 #include "xtab.h"
 #define MAXSYM (100)
