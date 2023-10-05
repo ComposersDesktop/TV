@@ -74,7 +74,9 @@ extern int yydebug;
 
 #include <stdlib.h>
 #include <stdio.h>
+#ifndef MAC
 #include <malloc.h>
+#endif
 #include <memory.h>
 #include "tv.h"
 
