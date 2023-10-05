@@ -94,8 +94,14 @@ prexpr(Expr *e, FILE *f, int level)
 		fprintf(f, "TIDENT %s(%p) offset = %d\n", e->sym->picture, e->sym, e->indx);
 		return;
 
+        case TRY:
+          ind(f, level); fprintf(f, "TRY %s\n", e->rule->rule->picture);
+                for(el = e->el; el != 0; el = el->next)
+                  prexpr(el->e, f, level+1);
+                return;
+
 	default:
-		fprintf(stderr, "checkoper pr - operation %d not defined yet\n", e->op);
+          fprintf(stderr, "checkoper pr - operation %d not defined yet(%d)\n", e->op, __LINE__);
 		return;
 	}
 }
@@ -169,12 +175,24 @@ prstat(Statement *s, FILE *f, int level)
                   ind(f, level); fprintf(f, "FILLTABLES\n");
                   break;
 
+                case FILLTABLE:
+                  ind(f, level); fprintf(f, "FILLTABLE\n");
+                  break;
+
+                case LOOP:
+                  ind(f, level); fprintf(f, "LOOP\n");
+                  break;
+
+                case CLS:
+                  ind(f, level); fprintf(f, "CS\n");
+                  break;
+
                 case '=':
                   ind(f, level); fprintf(f, "=\n");
                   break;
                   
 		default:
-			fprintf(stderr, "print - operation %d not defined yet\n", s->code);
+                  fprintf(stderr, "print - operation %d not defined yet(%d)\n", s->code, __LINE__);
 			break;//exit(1);
 		}
 	}
@@ -195,7 +213,7 @@ prproc(Proc *proc, FILE *f)
 	ind(f, 1); fprintf(f, "LOCALS\n");
 	for(l = proc->locals; l != 0; l = l->next) {
 		ind(f, 2); fprintf(f, "%s(%p) at offset %d\n",
-                                   (l->name? l->name->picture:"no name"), l->name,i++); /* ...but l->name is zero -- JPff */
+                                   (l->name? l->name->picture:""), l->name,i++); /* ...but l->name is zero -- JPff */
 		if(l->type == value)
 			prexpr(l->init, f, 3);
 		else if(l->init == 0) {

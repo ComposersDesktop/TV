@@ -9,54 +9,8 @@
 #include "xtab.h"
 #define MAXSYM (100)
 
-/* static union { */
-/*       char    c[8]; */
-/*       int32_t v[2]; */
-/* } data; */
-
-/* static int charp = 8; */
-
 int	linenum = 1;
 static Symbol *symtab = 0;
-
-/* static void decode(long* v) */
-/* { */
-/*     unsigned long n=32, sum, y=v[0], z=v[1], */
-/*              delta=0x9e3779b9 ; */
-/*     sum = delta<<5 ; */
-/*     /\* start cycle *\/ */
-/*     while (n-->0) { */
-/*       z   -= (y<<4)+k2 ^ y+sum ^ (y>>5)+k3 ; */
-/*       y   -= (z<<4)+k0 ^ z+sum ^ (z>>5)+k1 ; */
-/*       sum -= delta ; */
-/*     } */
-/*     /\* end cycle *\/ */
-/*     v[0]=y ; v[1]=z ; */
-/* } */
-
-/* static int enc_getc(FILE* f) */
-/* { */
-/*     if (data.c[charp]=='\0') return EOF; */
-/* /\*     putc(data.c[charp], stderr); *\/ */
-/*     return data.c[charp++]; */
-/* } */
-
-static int tv_getc(FILES *infile)
-{
-      return getc(infile->fd);
-}
-
-static void tv_fgets(char *b, int len, FILES *infile)
-{
-    fgets(b, len, infile->fd);
-}
-
-static int tv_ungetc(int ch, FILES *infile)
-{
-    ungetc(ch, infile->fd);
-    return 0;
-}
-
 
 Symbol *
 lookup(char *str)
@@ -109,7 +63,7 @@ getstring(FILES *infile)
 							linenum);
 			exit(1);
 		}
-		*bp = tv_getc(infile);
+		*bp = getc(infile->fd);
 		switch(*bp) {
 		case '"':
 			*bp = '\0';
@@ -121,7 +75,7 @@ getstring(FILES *infile)
 							linenum);
 			exit(1);
 		case '\\':
-			switch(ch = tv_getc(infile)) {
+			switch(ch = getc(infile->fd)) {
 			case '0':
 				*bp = '\0';
 				break;
@@ -164,7 +118,7 @@ getnumber(FILES *infile, int ch)
 	char	*cp = buf;
 	if(ch != '.') {
 		*cp++ = ch;
-		while(isdigit(ch = tv_getc(infile)))
+		while(isdigit(ch = getc(infile->fd)))
 		{
 			if(cp - buf >= MAXSYM)
 			{
@@ -178,7 +132,7 @@ getnumber(FILES *infile, int ch)
 	if(ch == '.')
 	{
 		*cp++ = '.';
-		while(isdigit(ch = tv_getc(infile)))
+		while(isdigit(ch = getc(infile->fd)))
 		{
 			if(cp - buf >= MAXSYM)
 			{
@@ -188,7 +142,7 @@ getnumber(FILES *infile, int ch)
 			*cp++ = ch;
 		}
 	}
-	tv_ungetc(ch, infile);
+	ungetc(ch, infile->fd);
 	*cp++ = '\0';
 	yylval.number = atof(buf);
 }
@@ -202,7 +156,7 @@ yylex(void)
 	static int showcr = 0;
 again:
 	cp = buf;
-	while(isspace(ch = tv_getc(infiles)))
+	while(isspace(ch = getc(infiles->fd)))
 		if(ch == '\n') {
 			linenum++;
 			if(showcr) {
@@ -211,8 +165,8 @@ again:
 			}
 		}
 	if(ch == '/') {
-		if((ch = tv_getc(infiles)) == '/') {	/* skip comments */
-			while((ch = tv_getc(infiles)) != '\n')
+		if((ch = getc(infiles->fd)) == '/') {	/* skip comments */
+			while((ch = getc(infiles->fd)) != '\n')
 				;
 			linenum++;
 			if(showcr) {
@@ -221,7 +175,7 @@ again:
 			}
 			goto again;
 		} else {
-			tv_ungetc(ch, infiles);
+			ungetc(ch, infiles->fd);
 			ch = '/';
 		}
 	}
@@ -235,19 +189,19 @@ again:
 	case '^':
 		return ch;
 	case '[':
-		if((ch = tv_getc(infiles)) == '|')
+		if((ch = getc(infiles->fd)) == '|')
 			return IMODO;
-		tv_ungetc(ch, infiles);
+		ungetc(ch, infiles->fd);
 		return '[';
 	case '+': case '-':
-		if((ch1 = tv_getc(infiles)) == ch) {
+		if((ch1 = getc(infiles->fd)) == ch) {
 			showcr = 1;
 			return (ch == '+') ? PLUSPLUS : MINUSMINUS;
 		}
-		tv_ungetc(ch1, infiles);
+		ungetc(ch1, infiles->fd);
 		/* FALLTHROUGH */
 	case '*': case '/': case '%':
-		if((ch1 = tv_getc(infiles)) == '=')
+		if((ch1 = getc(infiles->fd)) == '=')
 			switch(ch) {
 			case '+':	return PLUSEQ;
 			case '-':	return MINUSEQ;
@@ -255,44 +209,44 @@ again:
 			case '/':	return DIVEQ;
 			case '%':	return MODEQ;
 			}
-		tv_ungetc(ch1, infiles);
+		ungetc(ch1, infiles->fd);
 		return ch;
 	case ']':
 	case ')':
 		showcr = 1;
 		return ch;
 	case '<':
-		if((ch = tv_getc(infiles)) == '=')
+		if((ch = getc(infiles->fd)) == '=')
 			return LESS_EQ;
 		if (ch == '<') return BEGCAT;
-		tv_ungetc(ch, infiles);
+		ungetc(ch, infiles->fd);
 		return '<';
 	case '>':
-		if((ch = tv_getc(infiles)) == '=')
+		if((ch = getc(infiles->fd)) == '=')
 			return GTHAN_EQ;
 		if (ch == '>') return ENDCAT;
-		tv_ungetc(ch, infiles);
+		ungetc(ch, infiles->fd);
 		return '>';
 	case '&':
-		if(tv_getc(infiles) != '&')
+		if(getc(infiles->fd) != '&')
 			yyerror("single '&' seen");
 		return ANDAND;
 	case '|':
-		if((ch = tv_getc(infiles)) == '|')
+		if((ch = getc(infiles->fd)) == '|')
 			return OROR;
 		else if(ch == ']') {
 			showcr = 1;
 			return IMODC;
 		}
-		tv_ungetc(ch, infiles);
+		ungetc(ch, infiles->fd);
 		return '|';
 	case '=':
-		if((ch = tv_getc(infiles)) == '=')
+		if((ch = getc(infiles->fd)) == '=')
 			return EQ;
-		tv_ungetc(ch, infiles);
+		ungetc(ch, infiles->fd);
 		return '=';
 	case '!':
-		if((ch = tv_getc(infiles)) != '=')
+		if((ch = getc(infiles->fd)) != '=')
 			yyerror("badly formed '!='");
 		return '!';
 	case '"':
@@ -319,7 +273,7 @@ again:
 		{
 			char name[1024];
 			FILES *x;
-			tv_fgets(name,1024,infiles);
+			fgets(name,1024,infiles->fd);
 			if (strncmp(name, "include ", 8)==0) {
 				char *p = name+8;
 				while (*p==' ') p++;
@@ -336,11 +290,6 @@ again:
 					printf("Failed to include file %s\n", p);
 					free(x);
 					goto again;
-				}
-				{	    /* Is this an encrypted file?? */
-					int ch = getc(x->fd);
-					ungetc(ch, x->fd);
-/*		      fprintf(stderr, "Enc (%s) = %d\n", p, infiles->encrypt); */
 				}
 				x->name = (char*)malloc(strlen(p)+1);
 				strcpy(x->name, p); /* Safe by construction */
@@ -359,7 +308,7 @@ again:
 	}
 	if(isalpha(ch) || ch == '_' || ch == '\'') {
 		*cp++ = ch;
-		while(isalpha(ch = tv_getc(infiles)) ||
+		while(isalpha(ch = getc(infiles->fd)) ||
 		      isdigit(ch) || ch == '_') {
 		  if(cp - buf >= MAXSYM) {
 			        yyerror("badly formed symbol");
@@ -368,7 +317,7 @@ again:
 			*cp++ = ch;
 		}
 		*cp++ = '\0';
-		tv_ungetc(ch, infiles);
+		ungetc(ch, infiles->fd);
 		yylval.symbol = lookup(buf);
 		if(yylval.symbol->keywcode != 0) {
 			if(yylval.symbol->keywcode == BREAK
